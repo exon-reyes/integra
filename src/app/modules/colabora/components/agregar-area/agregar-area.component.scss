@@ -1,0 +1,64 @@
+/* Estilos para el componente AgregarArea */
+
+.field {
+    @apply mb-4;
+}
+
+/* Estilos para campos con error */
+.ng-invalid.ng-touched {
+    @apply border-red-300 focus:border-red-500 focus:ring-red-500;
+}
+
+/* Espaciado para checkboxes */
+.p-checkbox {
+    @apply mr-2;
+}
+
+/* Estilos para el formulario */
+form {
+    @apply p-4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    :host ::ng-deep .p-dialog {
+        width: 95vw !important;
+        margin: 1rem;
+    }
+    
+    .flex.justify-end {
+        @apply flex-col gap-2;
+        
+        .p-button {
+            @apply w-full;
+        }
+    }
+}
+
+/* Loading state */
+.loading-overlay {
+    @apply absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10;
+}
+
+/* Custom styles for PrimeNG components */
+:host ::ng-deep {
+    .p-dialog-header {
+        @apply bg-blue-50 border-b border-blue-200;
+    }
+    
+    .p-dialog-title {
+        @apply text-blue-800 font-semibold;
+    }
+    
+    .p-inputtext:focus {
+        @apply ring-2 ring-blue-500 ring-opacity-50;
+    }
+    
+    .p-checkbox:not(.p-checkbox-disabled):hover .p-checkbox-box {
+        @apply border-blue-500;
+    }
+    
+    .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight {
+        @apply bg-blue-500 border-blue-500;
+    }
+}

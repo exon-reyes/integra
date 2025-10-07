@@ -1,0 +1,30 @@
+<div class="flex flex-col">
+    <div class="flex w-full items-center bg-sky-800 px-5 py-4   rounded-lg text-white mb-12 pl-12">
+        <img alt="img" class="md:w-42 md:h-42" height="100" ngSrc="assets/img/fixcontrol.svg" width="100" />
+        <div class="ml-7">
+            <div class="text-2xl md:text-4xl font-bold mb-2">Gestión y control</div>
+            <span
+                class="text-xlg">Gestión integral de reportes y seguimiento de Imagen y Mantenimiento</span>
+        </div>
+
+    </div>
+</div>
+<app-stats-content></app-stats-content>
+<h4 class="font-bold text-xl md:text-3xl md:mt-12 mb-4 text-center">Selecciona un <span
+    class="text-red-500">Módulo</span> a operar
+</h4>
+<div class="mt-4 flex flex-wrap items-center justify-center gap-7">  <!-- Card Container Start -->
+    <div class="flex flex-col bg-white rounded-lg shadow-md w-full overflow-hidden sm:w-52">
+        <img alt="" class="m-6" height="140" ngSrc="assets/logo/fixcontrol.svg" width="140" />
+
+        <a class="bg-blue-500 text-white p-3 text-center hover:bg-blue-800 transition-all duration-500"
+           routerLink="admin">Ingresar</a>
+    </div>
+    <div class="flex flex-col bg-white rounded-lg shadow-md w-full overflow-hidden sm:w-52">
+        <img alt="" class="m-6" height="140" ngSrc="assets/logo/colabora.svg" width="140" />
+
+        <a class="bg-blue-500 text-white p-3 text-center hover:bg-blue-800 transition-all duration-500"
+           [routerLink]="['colabora']"
+           [queryParams]="{ departamentoId: getDepartamentoId() }">Ingresar</a>
+    </div>
+</div>

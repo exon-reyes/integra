@@ -1,0 +1,18 @@
+.max-h-32 {
+  max-height: 18rem;
+}
+
+.max-h-150 {
+  max-height: 150px;
+}
+
+// Tamaño medio para imágenes en la descripción
+:host ::ng-deep img {
+  max-width: 300px;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

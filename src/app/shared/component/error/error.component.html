@@ -1,0 +1,16 @@
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative m-0 mb-3">
+  <div class="flex items-center">
+    <i class="{{ errorService.error()?.icon || 'pi pi-exclamation-circle' }} text-red-500 mr-2"></i>
+    <span class="font-bold">{{ errorService.error()?.title || 'Error' }}</span>
+    <button (click)="errorService.clear()" class="absolute top-0 right-0 mt-2 mr-2 text-red-500 hover:text-red-700">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+  @if (dataMessages.length) {
+    <ul class="mt-2 ml-6 list-disc list-inside">
+      @for (msg of dataMessages; track dataMessages) {
+        <li>{{ msg }}</li>
+      }
+    </ul>
+  }
+</div>

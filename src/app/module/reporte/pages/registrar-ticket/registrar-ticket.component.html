@@ -1,0 +1,201 @@
+@if (registrarFormService.procesando()) {
+  <app-spinner [modal]="true" message="Procesando la información" title="Un momento"></app-spinner>
+}
+<div class="flex flex-col gap-2 items-center">
+  <!--BANNER-->
+  <div class="w-full flex flex-col gap-1">
+    <p-menubar class="w-full">
+      <ng-template #start>
+        <app-title description="Administración de incidencias y seguimientos" imageSrc="assets/icon/ireport.svg"
+                   title="Nuevo reporte"></app-title>
+      </ng-template>
+      <ng-template #end>
+        <p-button #general (onClick)="openGeneral()" [disabled]="!enableGeneral()" icon="pi pi-book"
+                  label="Contacto" severity="secondary"></p-button>
+      </ng-template>
+    </p-menubar>
+
+    <p-panel class="w-full shadow-xl">
+      <form (ngSubmit)="registrar()" [formGroup]="form" method="post">
+        @if (registrarFormService.ticketSuccess()) {
+
+          <!--TICKET REGISTRADO | SE VISUALIZA INFORMACION DE REGISTRO-->
+          <p-button icon="pi pi-arrow-left" severity="secondary" (onClick)="resetForm()"/>
+          <div class="flex items-center">
+            <app-content-component [title]="{'text':'Incidencia registrada','color':'text-blue-900'}"
+                                   icon-src="assets/icon/ok.svg" class="w-full mt-9 mb-4">
+              <ticket-info [ticket]="registrarFormService.ticketSuccess()" class="mt-3"></ticket-info>
+              <div class="flex flex-row gap-3 items-center mt-4">
+                <button-copy [data]="buildCopyString(registrarFormService.ticketSuccess())"
+                             severity="primary"></button-copy>
+                <share-ticket [ticket]="registrarFormService.ticketSuccess()"></share-ticket>
+              </div>
+            </app-content-component>
+          </div>
+
+        } @else {
+
+          <!--FORMULARIO DE REGISTRO-->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:col-span-2">
+            <div class="md:col-span-2 border-b border-b-gray-200 pb-4 mb-2">
+              <label class="required">Unidad de negocio</label>
+              <p-select
+                formControlName="unidad"
+                [loading]="formData.cargandoUnidades()"
+                (onChange)="updateGeneralStatus($event.value)"
+                styleClass="w-full mt-1"
+                showClear="true"
+                [options]="formData.unidades$|async" optionLabel="nombre"
+                filterBy="clave,nombre" filter="true">
+                  <ng-template let-unidad #item>
+                      {{unidad.clave }} {{unidad.nombre}}
+                  </ng-template>
+              </p-select>
+              @if (hasError('unidad')) {
+                <span class="text-red-500 text-sm" aria-live="polite">Selecciona una unidad de negocio</span>
+              }
+            </div>
+            <div class="md:col-span-1">
+              <label class="required">Área de seguimiento</label>
+              <p-select formControlName="area" class="w-full mt-1" showClear="true"
+                        (onChange)="updateReports($event.value)"
+                        [loading]="formData.cargandoAreas()"
+                        (onClear)="eliminarReportes()"
+                        [options]="formData.areas$|async"
+                        optionLabel="nombre"></p-select>
+              @if (hasError('area')) {
+                <span class="text-red-500 text-sm">Selecciona el área responsable del seguimiento</span>
+              }
+            </div>
+            <div class="md:col-span-1">
+              <label class="required">Incidencia</label>
+              <p-select formControlName="reporte" optionLabel="nombre" filterBy="nombre" filter="true" showClear="true"
+                        [options]="formData.reportes()" class="w-full mt-1"></p-select>
+              @if (hasError('reporte')) {
+                <span class="text-red-500 text-sm">Selecciona el tipo de incidencia que deseas guardar</span>
+              }
+            </div>
+            @if (externalFolio()) {
+              <div class="md:col-span-1">
+                <label class="required">Folio de seguimiento</label>
+                <p-iconfield>
+                  <input type="text" formControlName="folio" pInputText class="w-full mt-1">
+                  @if (searchStateService.searching()) {
+                    <p-inputicon styleClass="pi pi-spinner pi-spin"/>
+                  }
+                </p-iconfield>
+                @if (hasError('folio')) {
+                  <span class="text-red-500 text-sm">Ingrese el folio de seguimiento proporcionado por el área</span>
+                }
+                @if (form.get('folio')?.errors?.['folioExistente'] && form.get('folio')?.touched) {
+                  <span class="text-red-500 text-sm">El folio ya se encuentra utilizado</span>
+                }
+              </div>
+            }
+            <div class="md:col-span-1">
+              <label class="required">Estatus</label>
+              <p-select [options]="formData.estatus$|async" formControlName="estatus" showClear="true"
+                        optionLabel="nombre"
+                        [loading]="formData.cargandoEstatus()"
+                        class="w-full mt-1"></p-select>
+              @if (hasError('estatus')) {
+                <span class="text-red-500 text-sm">Selecciona el estatus actual del evento</span>
+              }
+            </div>
+            <div class="md:col-span-1" [class.md:col-span-2]="externalFolio()">
+              <label>Atiende</label>
+              <input type="text" class="w-full mt-1" pInputText formControlName="agente">
+            </div>
+            <div class="col-span-full">
+              <p-editor class="w-full" styleClass="mt-1" formControlName="descripcion"
+                        [style]="{'max-height':'500px','overflow':'auto'}">
+              </p-editor>
+            </div>
+            <div class="col-span-full">
+              <div class="flex items-center justify-between mb-2">
+                <label>Actividades a realizar (Checklist)</label>
+                @if (actividades.length > 0) {
+                  <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <span>{{actividadesCompletadas()}} de {{actividades.length}} completadas</span>
+                    <span class="text-blue-600 font-medium">{{porcentajeCompletado()}}%</span>
+                  </div>
+                }
+              </div>
+              @if (actividades.length > 0) {
+                <div class="mb-3">
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                         [style.width.%]="porcentajeCompletado()"></div>
+                  </div>
+                </div>
+              }
+              <div class="mt-2 space-y-2">
+                @for (actividad of actividades; track $index) {
+                  <div class="flex items-center gap-2 p-2 border border-gray-200 rounded-lg">
+                    <p-checkbox [(ngModel)]="actividad.completada" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    <input type="text" [(ngModel)]="actividad.descripcion" [ngModelOptions]="{standalone: true}"
+                           placeholder="Descripción de la actividad"
+                           class="flex-1 border-0 outline-none bg-transparent" pInputText>
+                    <button type="button" class="text-red-500 hover:bg-red-50 p-1 rounded"
+                           (click)="eliminarActividad($index)" title="Eliminar actividad">
+                      <i class="pi pi-trash text-sm"></i>
+                    </button>
+                  </div>
+                }
+                <button type="button" class="flex items-center gap-2 text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
+                       (click)="agregarActividad()">
+                  <i class="pi pi-plus"></i>
+                  <span>Agregar actividad</span>
+                </button>
+              </div>
+            </div>
+            <div class="col-span-full">
+              <label>Adjuntar archivo</label>
+              <div class="flex gap-2 items-center mt-1">
+                <div class="flex-1 relative">
+                  <input type="file" #fileInput accept=".pdf,.doc,.docx,.jpg,.png"
+                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                         (change)="onFileChange($event)">
+                  <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                    @if (!archivoSeleccionado) {
+                      <i class="pi pi-upload text-2xl text-gray-400 mb-2"></i>
+                      <p class="text-gray-600">Seleccionar archivo</p>
+                    } @else {
+                      <i class="pi pi-file text-2xl text-blue-500 mb-2"></i>
+                      <p class="text-blue-600 font-medium">{{archivoSeleccionado.name}}</p>
+                      <p class="text-gray-500 text-sm">{{formatFileSize(archivoSeleccionado.size)}}</p>
+                    }
+                  </div>
+                </div>
+                @if (archivoSeleccionado) {
+                  <button type="button" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                         (click)="cancelarArchivo()" title="Cancelar archivo">
+                    <i class="pi pi-times"></i>
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="col-span-full flex justify-center">
+              <!-- Botón para guardar el ticket, habilitado solo si el formulario es válido -->
+              <p-button label="Registrar" [disabled]="form.invalid" type="submit"/>
+            </div>
+          </div>
+
+        }
+      </form>
+    </p-panel>
+  </div>
+</div>
+
+@defer (when openGeneralDialog; prefetch on idle) {
+  <p-dialog [(visible)]="openGeneralDialog" [breakpoints]="{ '1199px': '75vw', '575px': '98vw' }"
+            [style]="{ width: '50vw' }" header="Generales" [modal]="true">
+    @if (openGeneralDialog) {
+        <app-contacto [id-unidad]="unidadSeleccionada.id"></app-contacto>
+    }
+  </p-dialog>
+} @loading {
+  <app-spinner [modal]="true"></app-spinner>
+}
+
+

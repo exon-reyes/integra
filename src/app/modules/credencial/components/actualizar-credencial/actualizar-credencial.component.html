@@ -1,0 +1,80 @@
+@if (obteniendoDatos) {
+  <app-spinner/>
+} @else {
+  <form (ngSubmit)="guardar()" [formGroup]="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="col-span-2">
+      <label class="required">Proveedor</label>
+      <p-select
+        [options]="proveedores"
+        formControlName="proveedor"
+        optionLabel="nombre"
+        styleClass="w-full"/>
+    </div>
+
+    <div class="col-span-2">
+      <label class="required">Unidad de negocio</label>
+      <p-select
+        formControlName="unidad"
+        scrollHeight="140px"
+        styleClass="w-full mt-1"
+        [options]="unidades"
+        optionLabel="nombre"
+        filterBy="clave,nombre"
+        filter="true">
+        <ng-template let-unidad #item>
+          <div class="w-full">
+            <div>{{ unidad.clave }} {{ unidad.nombre }}</div>
+          </div>
+        </ng-template>
+        <ng-template let-u #selectedItem>
+          <div class="flex items-center gap-2">
+            {{ u.clave }} {{ u.nombre }}
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div class="col-span-2">
+      <label>Departamento</label>
+      <p-select
+        scrollHeight="120px"
+        styleClass="w-full mt-1"
+        [options]="departamentos"
+        optionLabel="nombre"
+        formControlName="departamento"/>
+    </div>
+
+    <div class="col-span-2">
+      <label>Usuario</label>
+      <input
+        pInputText
+        formControlName="usuario"
+        class="w-full mt-1"
+        placeholder="Ingrese usuario"/>
+    </div>
+
+    <div class="col-span-2">
+      <label>Clave</label>
+      <input
+        pInputText
+        formControlName="clave"
+        class="w-full mt-1"
+        placeholder="Ingrese la clave"/>
+    </div>
+
+    <div class="col-span-2">
+      <label>Nota</label>
+      <textarea
+        rows="2"
+        style="resize: none"
+        formControlName="descripcion"
+        class="w-full mt-1"
+        pTextarea
+        placeholder="Ingrese sus comentarios"></textarea>
+    </div>
+
+    <div class="col-span-2 flex justify-center gap-2">
+      <p-button label="Guardar" type="submit"/>
+    </div>
+  </form>
+}

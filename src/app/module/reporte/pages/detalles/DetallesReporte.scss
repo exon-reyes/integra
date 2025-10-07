@@ -1,0 +1,115 @@
+// Estilos para controlar scroll y contenido en ambas secciones
+.flex-1.overflow-y-auto {
+  // Forzar el comportamiento de scroll
+  min-height: 0;
+  height: 100%;
+}
+
+// Estilos para el componente ticket-generales
+ticket-generales {
+  ::ng-deep {
+    // Hacer el diseño más compacto
+    .grid {
+      max-width: 100%;
+      gap: 0.75rem !important; // Reducir gap entre elementos
+    }
+
+    // Reducir márgenes y padding
+    .col-span-6, .col-span-12 {
+      margin-bottom: 0.5rem !important;
+    }
+
+    // Ajustar imágenes
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+      object-fit: contain;
+    }
+
+    // Controlar el contenido HTML de descripción
+    div[innerHTML] {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      margin-top: 0.25rem !important;
+
+      // Imágenes en descripción con tamaño medio
+      img {
+        max-width: 250px !important;
+        max-height: 150px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain;
+        margin: 0.5rem 0 !important;
+      }
+    }
+
+    // Reducir espaciado en elementos de texto
+    p {
+      margin-bottom: 0.25rem !important;
+    }
+
+    // Aumentar el tamaño del contenedor de descripción
+    .max-h-32 {
+      max-height: 20rem !important; // Aumentar altura máxima
+    }
+
+    .max-h-150 {
+      max-height: 250px !important; // Aumentar altura para sin imágenes
+    }
+  }
+}
+
+// Estilos para el historial de seguimientos
+historial-ticket {
+  ::ng-deep {
+
+
+    // Contenedor principal del historial
+    ol {
+
+      max-width: 100%;
+      //overflow-x: hidden;
+    }
+
+    // Items del historial
+    li {
+
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+
+    // Ajustar todas las imágenes al ancho del contenedor
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+      object-fit: contain;
+    }
+
+    // Evitar que el contenido HTML se desborde horizontalmente
+    div[innerHTML] {
+
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+
+    // Ajustar tablas si las hay
+    table {
+      max-width: 100%;
+      table-layout: fixed;
+      word-wrap: break-word;
+    }
+  }
+}
+
+// Estilos para archivo-viewer
+archivo-viewer {
+  ::ng-deep {
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+      object-fit: contain;
+    }
+  }
+}

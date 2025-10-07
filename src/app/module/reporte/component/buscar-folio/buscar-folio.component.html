@@ -1,0 +1,43 @@
+<p-dialog
+    (onHide)="cerrarModal()"
+    [(visible)]="visible"
+    [closable]="true"
+    [draggable]="false"
+    [modal]="true"
+    [resizable]="false"
+    header="Buscar por Folio"
+    styleClass="w-96">
+
+    <form (ngSubmit)="buscar()" [formGroup]="form" class="buscar-form">
+        <div class="field">
+            <input
+                autofocus
+                class="w-full"
+                formControlName="folio"
+                id="folio"
+                pInputText
+                placeholder="Ingrese el folio"
+                type="text">
+            @if (form.get('folio')?.invalid && form.get('folio')?.touched) {
+                <small class="p-error">
+                    El folio es requerido
+                </small>
+            }
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <div class="flex justify-end gap-2">
+            <p-button
+                (onClick)="cerrarModal()"
+                label="Cancelar"
+                severity="secondary">
+            </p-button>
+            <p-button
+                (onClick)="buscar()"
+                [disabled]="form.invalid"
+                label="Buscar">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

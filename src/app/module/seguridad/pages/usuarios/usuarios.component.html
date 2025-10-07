@@ -1,0 +1,131 @@
+<div class="flex bg-slate-500 p-4 text-white rounded-md mb-4">
+  <app-title
+    description="Visualización de usuarios y sus permisos"
+    imageSrc="assets/icon/users.svg"
+    title="Usuarios">
+  </app-title>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  @for (usuario of usuarios(); track usuario.id) {
+    <p-card [header]="usuario.nombre" styleClass="h-fit">
+      <div class="space-y-2">
+        <div class="text-sm">
+          <strong>Puesto:</strong> {{ usuario?.nombre || 'Sin puesto' }}
+        </div>
+
+        <div class="text-sm">
+          <strong>Departamento:</strong> {{ usuario?.nombre || 'Sin departamento' }}
+        </div>
+
+        @if (usuario?.rol && usuario.rol.permisos.length > 0) {
+          <div class="text-sm">
+            <strong>Roles:</strong>
+            <div class="flex flex-wrap gap-1 mt-1">
+                <span class="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                  {{ usuario.rol.nombre }}
+                </span>
+            </div>
+          </div>
+        } @else {
+          <div class="text-sm text-gray-500 italic">Sin rol asignados</div>
+        }
+      </div>
+
+      <ng-template #footer>
+        <div class="flex justify-end">
+          <p-button
+            label="Ver Permisos"
+            icon="pi pi-eye"
+            size="small"
+            (onClick)="verPermisos(usuario)">
+          </p-button>
+        </div>
+      </ng-template>
+    </p-card>
+  }
+</div>
+
+<p-dialog
+    [(visible)]="showPermissionsDialog"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    header="Permisos del Usuario"
+    styleClass="w-11/12 max-w-5xl"
+    (onHide)="cerrarDialog()">
+
+    @if (selectedUsuario) {
+        <div class="mb-4">
+            <h5 class="text-lg font-bold">Usuario: {{ selectedUsuario.nombreCompleto }}</h5>
+            <p class="text-gray-600 font-bold">Rol asignado: {{ selectedUsuario?.rol.nombre }}</p>
+        </div>
+
+        <!-- 🔹 Grid de módulos -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+            @for (modulo of modulos(); track modulo.id) {
+                <button
+                    type="button"
+                    (click)="seleccionarModulo(modulo)"
+                    class="p-4 rounded-lg border shadow-sm w-full text-center transition
+                 hover:bg-blue-50 hover:border-blue-400 hover:text-black
+                 focus:outline-none focus:ring-2 focus:ring-blue-500
+                 {{ selectedModulo?.id === modulo.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-300' }}">
+                    <span class="block font-medium">{{ modulo.nombre }}</span>
+                </button>
+            }
+        </div>
+
+        <!-- 🔹 Detalle de permisos del módulo seleccionado -->
+        @if (selectedModulo) {
+            <div class="border rounded-lg p-4">
+                <h5 class="text-md font-semibold mb-3 text-blue-700">
+                    Permisos de {{ selectedModulo.nombre }}
+                </h5>
+
+                @for (submodulo of selectedModulo.submodulos; track submodulo.id) {
+                    <div class="mb-4">
+                        <h5 class="text-sm font-medium mb-2 text-gray-700">{{ submodulo.nombre }}</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            @for (permiso of submodulo.permisos; track permiso.id) {
+                                <div class="flex items-center space-x-2 p-2 rounded border border-gray-200 bg-gray-50">
+                                    <input
+                                        type="checkbox"
+                                        class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 text-black"
+                                        [checked]="tienePermiso(permiso)"
+                                        disabled
+                                    />
+                                    <div class="flex-1">
+                                        @if (permiso.descripcion) {
+                                            <p class="text-xs">{{ permiso.descripcion }}</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        } @else {
+            <div class="text-center py-8 text-gray-500 italic">
+                Selecciona un módulo para ver sus permisos
+            </div>
+        }
+    }
+
+    <ng-template #footer>
+        <div class="flex justify-end">
+            <p-button
+                label="Cerrar"
+                severity="secondary"
+                (onClick)="cerrarDialog()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+
+@if (loading()) {
+    <app-spinner [modal]="true"></app-spinner>
+}

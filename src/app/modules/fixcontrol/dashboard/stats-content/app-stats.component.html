@@ -1,0 +1,31 @@
+@if (cargando()) {
+  <div class="grid grid-cols-12 gap-8">
+    @for (stat of stats_data(); track stat.title) {
+      <div class="col-span-12 lg:col-span-6 xl:col-span-4">
+        <app-stats title="{{ stat.title }}" value="{{ stat.value }}" icon_path="{{ stat.icon_path }}">
+          <div class="flex items-center justify-center">
+            <app-spinner></app-spinner>
+          </div>
+        </app-stats>
+      </div>
+    }
+  </div>
+} @else if (error()) {
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div class="flex items-center">
+      <i class="pi pi-exclamation-triangle mr-2"></i>
+      <span>{{ error() }}</span>
+    </div>
+  </div>
+} @else {
+  <div class="grid grid-cols-12 gap-8">
+    @for (stat of stats_data(); track stat.title) {
+      <div class="col-span-12 lg:col-span-6 xl:col-span-4">
+        <app-stats title="{{ stat.title }}" value="{{ stat.value }}" icon_path="{{ stat.icon_path }}">
+          <span class="text-primary font-medium">{{ stat.value }}</span>
+          <span class="text-muted-color"> {{ stat.decription }}</span>
+        </app-stats>
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,23 @@
+<p-panel header="Horarios de operación">
+  @if (horarios || loading == false) {
+    @if (horarios && horarios.length > 0) {
+      <div class="grid grid-cols-3 gap-3">
+        <div class="font-semibold">Horario</div>
+        <div class="font-semibold">Apertura</div>
+        <div class="font-semibold">Cierre</div>
+        <div class="col-span-3 border-b-1 border-b-gray-200"></div>
+        @for (i of horarios; track i.id) {
+          <div>{{ i.nombre }}</div>
+          <div>{{ i.apertura }}</div>
+          <div>{{ i.cierre }}</div>
+          <div class="col-span-3 border-b-1 border-b-gray-200"></div>
+        }
+      </div>
+    } @else {
+      <span class="italic">No se encontraron resultados</span>
+    }
+  } @else {
+    <br>
+    <app-spinner></app-spinner>
+  }
+</p-panel>

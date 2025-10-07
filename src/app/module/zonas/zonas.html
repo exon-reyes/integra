@@ -1,0 +1,88 @@
+<!-- Minimalist and modern zone management UI -->
+<div class="bg-white shadow-sm rounded-lg p-4 mb-4 border border-gray-100">
+  <div class="flex flex-row gap-3 items-center">
+    <input
+      pInputText
+      class="flex-1 border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+      [(ngModel)]="nombreZona"
+      [placeholder]="zonaEditando ? 'Editando zona' : 'Nueva zona'"
+      [disabled]="loading"
+    >
+    <p-button
+      [label]="zonaEditando ? 'Actualizar' : 'Guardar'"
+      (onClick)="guardarZona()"
+      [loading]="loading"
+      [disabled]="loading"
+      styleClass="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200"
+    ></p-button>
+    @if (zonaEditando) {
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        (onClick)="cancelarEdicion()"
+        [disabled]="loading"
+        styleClass="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
+      ></p-button>
+    }
+  </div>
+</div>
+
+<div class="space-y-2 max-h-96 overflow-y-auto">
+  @for (zona of zonas(); track zona.id) {
+    <div class="bg-white shadow-sm rounded-lg p-3 border border-gray-100 hover:shadow-md transition-shadow duration-200 cursor-pointer group">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-3 h-3 rounded-full {{ zona.activo ? 'bg-green-400' : 'bg-gray-400' }} transition-colors duration-200"></div>
+          </div>
+          <span class="font-medium text-gray-800">{{ zona.nombre }}</span>
+        </div>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <p-button
+            size="small"
+            [icon]="zona.activo ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"
+            severity="warn"
+            [rounded]="true"
+            [outlined]="true"
+            (onClick)="toggleZonaActivo(zona)"
+            styleClass="p-2 hover:bg-orange-50 transition-colors duration-200"
+          ></p-button>
+          <p-button
+            size="small"
+            icon="pi pi-pencil"
+            severity="info"
+            [rounded]="true"
+            [outlined]="true"
+            (onClick)="editarZona(zona)"
+            styleClass="p-2 hover:bg-blue-50 transition-colors duration-200"
+          ></p-button>
+          <p-button
+            size="small"
+            icon="pi pi-trash"
+            severity="danger"
+            [rounded]="true"
+            [outlined]="true"
+            (onClick)="eliminarZona(zona)"
+            styleClass="p-2 hover:bg-red-50 transition-colors duration-200"
+          ></p-button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<div class="bg-gray-50 rounded-lg p-3 mt-4 border border-gray-200">
+  <div class="flex justify-between items-center text-sm">
+    <div class="flex gap-6">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+        <span class="text-gray-600">Activas: {{ zonasActivas }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+        <span class="text-gray-600">Inactivas: {{ zonasInactivas }}</span>
+      </div>
+    </div>
+    <span class="font-semibold text-gray-800">Total: {{ totalZonas }}</span>
+  </div>
+</div>

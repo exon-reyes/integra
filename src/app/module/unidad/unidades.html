@@ -1,0 +1,194 @@
+<!-- Minimalist and modern unit management UI -->
+<div class="bg-white shadow-sm rounded-lg p-4 mb-4 border border-gray-100">
+
+    <h3><i style="font-size: 1.5rem" class="pi pi-building"></i> Administración de unidades</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
+      <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+        <i class="pi pi-check-circle text-green-600"></i>
+      </div>
+      <div>
+        <div class="text-xl font-bold text-green-800">{{ stats().activas }}</div>
+        <div class="text-sm text-green-600">Activas</div>
+      </div>
+    </div>
+
+    <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
+      <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+        <i class="pi pi-times-circle text-red-600"></i>
+      </div>
+      <div>
+        <div class="text-xl font-bold text-red-800">{{ stats().inactivas }}</div>
+        <div class="text-sm text-red-600">Inactivas</div>
+      </div>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
+      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+        <i class="pi pi-building text-blue-600"></i>
+      </div>
+      <div>
+        <div class="text-xl font-bold text-blue-800">{{ stats().total }}</div>
+        <div class="text-sm text-blue-600">Total</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white shadow-sm rounded-lg border border-gray-100">
+  <div class="p-4 border-b border-gray-100">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="flex gap-2">
+        @if (hasPermission('ADMIN')) {
+          <p-button label="Agregar" icon="pi pi-plus" size="small" (onClick)="openCreateDialog()"></p-button>
+          <p-button label="Sincronizar" severity="secondary" icon="pi pi-sync" size="small" (onClick)="sincronizar()" ></p-button>
+          <p-button label="Exportar" severity="secondary" icon="pi pi-download" size="small" (onClick)="exportarExcel()" [loading]="exporting()"></p-button>
+          <p-button label="Zonas" icon="pi pi-map-marker" severity="secondary" size="small" (onClick)="abrirDilogZonas()" ></p-button>
+        }
+      </div>
+      <div class="w-full sm:w-auto">
+        <p-iconfield>
+          <p-inputicon class="pi pi-search"/>
+          <input (input)="dt.filterGlobal($any($event.target).value, 'contains')" [(ngModel)]="searchValue"
+                 pInputText placeholder="Buscar unidades..." class="w-full sm:w-64 border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"/>
+        </p-iconfield>
+      </div>
+    </div>
+  </div>
+
+  <p-table #dt [value]="unidades()" [scrollable]="true" [globalFilterFields]="['nombre','clave']"
+           scrollHeight="calc(100vh - 350px)" [paginator]="true" [rows]="50"
+           class="border-0">
+    <ng-template #header>
+      <tr class="bg-gray-50">
+        <th class="font-medium text-gray-700 py-3 px-4">Nombre</th>
+        <th class="font-medium text-gray-700 py-3 px-4">Zona</th>
+        <th class="font-medium text-gray-700 py-3 px-4">Estado</th>
+        <th class="font-medium text-gray-700 py-3 px-4 w-32">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-unidad>
+      <tr class="hover:bg-gray-50 transition-colors duration-150">
+        <td class="py-3 px-4 font-medium text-gray-800">{{ unidad.clave }} {{ unidad.nombre }}</td>
+        <td class="py-3 px-4 text-gray-600">{{ unidad.contacto?.zona?.nombre }}</td>
+        <td class="py-3 px-4">
+          <span class="inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium {{ unidad.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+            <i class="pi {{ unidad.activo ? 'pi-check-circle' : 'pi-times-circle' }}"></i>
+            {{ unidad.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="py-3 px-4">
+          <div class="flex gap-1">
+            @if (hasPermission('ADMIN')) {
+              <p-button severity="info" (click)="openEditDialog(unidad)" icon="pi pi-pen-to-square" size="small" [rounded]="true" [outlined]="true" styleClass="p-2 hover:bg-blue-50 transition-colors duration-200"></p-button>
+              <p-button severity="danger" (click)="deleteUnidad(unidad)" icon="pi pi-trash" size="small" [rounded]="true" [outlined]="true" styleClass="p-2 hover:bg-red-50 transition-colors duration-200"></p-button>
+            }
+            @if (hasPermission('ADMIN') && !unidad.activo) {
+              <p-button (click)="toggleStatus(unidad)" icon="pi pi-play" size="small" severity="warn" [rounded]="true" [outlined]="true" styleClass="p-2 hover:bg-orange-50 transition-colors duration-200"></p-button>
+            }
+            <p-button severity="help" icon="pi pi-info-circle" (click)="abrirInfoGeneral(unidad.id)" size="small" [rounded]="true" [outlined]="true" styleClass="p-2 hover:bg-gray-50 transition-colors duration-200"></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+@if (!saving()) {
+  <p-dialog [(visible)]="displayDialog" [header]="isEditMode() ? 'Editar Unidad' : 'Nueva Unidad'"
+            [modal]="true" [style]="{ width: '45rem' }" [closable]="true" [draggable]="false"
+            styleClass="rounded-lg">
+    <form [formGroup]="form" (ngSubmit)="saveUnidad()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Clave *</label>
+          <input type="text" formControlName="clave" pInputText class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                 placeholder="Clave">
+          @if (form.get('clave')?.invalid && form.get('clave')?.touched) {
+            <small class="text-red-500 text-xs">Requerida, máx. 10 caracteres</small>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <input type="text" formControlName="nombre" pInputText class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                 placeholder="Nombre">
+          @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+            <small class="text-red-500 text-xs">Requerido, máx. 100 caracteres</small>
+          }
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado *</label>
+          <p-select [options]="estados()" formControlName="idEstado" optionLabel="nombre" optionValue="id"
+                   class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Zona *</label>
+          <p-select [options]="zonas()" formControlName="idZona" optionLabel="nombre" optionValue="id"
+                     class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-200"/>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input type="text" formControlName="telefono" pInputText class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                 placeholder="Teléfono">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" formControlName="email" pInputText class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                 placeholder="Email">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+        <textarea formControlName="direccion" rows="4" pTextarea class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Dirección"></textarea>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="activo" formControlName="activo" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+        <label for="activo" class="text-sm text-gray-700">Unidad activa</label>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="displayDialog = false"
+                  styleClass="px-4 py-2 rounded-md transition-colors duration-200"></p-button>
+        <p-button label="Guardar" icon="pi pi-check" severity="success" (onClick)="saveUnidad()"
+                  styleClass="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors duration-200"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+} @else {
+  <app-spinner [modal]="true"></app-spinner>
+}
+
+<p-dialog
+    [(visible)]="displayZonasDialog"
+    header="Zonas Operativas"
+    [modal]="true"
+    [style]="{ width: '35rem',height: '40rem' }"
+    [closable]="true"
+    [draggable]="false">
+    <app-zonas></app-zonas>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+@defer (when openGeneralDialog; prefetch on idle) {
+    <p-dialog [(visible)]="openGeneralDialog" [breakpoints]="{ '1199px': '75vw', '575px': '98vw' }"
+              [style]="{ width: '50vw' }" header="Generales" [modal]="true">
+        @if (openGeneralDialog) {
+            <app-contacto [id-unidad]="unidadSeleccionada"></app-contacto>
+            <app-operatividad [id-unidad]="unidadSeleccionada"></app-operatividad>
+        }
+    </p-dialog>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}

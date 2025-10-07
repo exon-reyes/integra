@@ -1,0 +1,89 @@
+@if (proveedor) {
+  <div class="flex flex-row p-5 mb-9 bg-slate-600 text-white shadow rounded-md items-center">
+    @if (proveedor.icon) {
+      <app-title [imageSrc]="'/assets/icon/cuenta/'+proveedor.icon" [title]="'Cuentas '+proveedor.nombre"
+                 description="Administración de cuentas"></app-title>
+    } @else {
+      <app-title [title]="proveedor.nombre" description="Administración de cuentas"></app-title>
+    }
+    <p-button icon="pi pi-plus" severity="success" label="Nuevo" class="ml-auto"
+              (click)="nuevaCredencial=true"></p-button>
+  </div>
+  <div class="flex flex-row mb-3 gap-3">
+    <p-button icon="pi pi-arrow-left" severity="secondary" routerLink="/sistemas/cuenta-prov"/>
+    <app-unidad (selectedUnit)="selectedBusiness($event)" class="w-92"></app-unidad>
+    <app-department (selectedDepartment)="selectedDepartment($event)"></app-department>
+  </div>
+  <div class="card shadow-md">
+    <p-iconfield>
+      <p-inputicon styleClass="pi pi-search"/>
+      <input (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+
+             pInputText placeholder="Buscar en resultados" type="text"/>
+    </p-iconfield>
+    <p-table #dt [tableStyle]="{'min-width': '50rem'}" [value]="proveedor?.credenciales" stripedRows
+             [globalFilterFields]="['usuario','descripcion']"
+             [loading]="cargandoTabla">
+      <ng-template #caption>
+
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>Usuario / Email</th>
+          <th>Clave</th>
+          <th>Actualizado</th>
+          <th>Nota</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-cuenta>
+        <tr>
+          <td>{{ cuenta.usuario }}</td>
+          <td>{{ cuenta.clave }}</td>
+          <td>{{ cuenta.actualizado | date: 'dd/MM/yy h:mm a' }}</td>
+          <td>{{ cuenta.comentario }}</td>
+          <td>
+            <div class="flex flex-row gap-2">
+              <p-button icon="pi pi-pencil" severity="primary" (onClick)="abrirModalEditar(cuenta)"/>
+              <p-button icon="pi pi-trash" (onClick)="eliminar($event,cuenta.id)" severity="warn"/>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+} @else {
+  <app-spinner message="Obteniendo información"></app-spinner>
+}
+
+@defer (when abrirEditar) {
+  @if (abrirEditar) {
+    <p-dialog [modal]="true" [(visible)]="abrirEditar" [style]="{ width: '30rem'}">
+      <ng-template #header>
+        <app-title [imageSrc]="'/assets/icon/cuenta/'+proveedor.icon" [title]="proveedor.nombre"
+                   description="Actualizar credenciales de acceso"></app-title>
+      </ng-template>
+      <app-actualizar [id-credencial]="idCredencial" (cuenta-actualizada)="cuentaActualizada()"></app-actualizar>
+    </p-dialog>
+  }
+} @loading {
+  <app-spinner [modal]="true"></app-spinner>
+}
+@defer (when nuevaCredencial) {
+  @if (nuevaCredencial) {
+    <p-dialog modal="true" [(visible)]="nuevaCredencial" [style]="{ width: '33rem'}">
+      <ng-template #header>
+        <app-title [imageSrc]="'/assets/icon/cuenta/'+proveedor.icon" [title]="proveedor.nombre"
+                   description="Registrar credenciales de acceso"></app-title>
+      </ng-template>
+      <app-guardar-credencial
+        [id-departamento]="departamento?.id"
+        [id-unidad]="unidad?.id"
+        [id-proveedor]="proveedor?.id"
+        (cuenta-registrada)="actualizarPagina()"></app-guardar-credencial>
+    </p-dialog>
+  }
+} @loading {
+  <app-spinner></app-spinner>
+}

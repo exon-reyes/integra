@@ -1,0 +1,8 @@
+<p-select
+  (onChange)="selectedDepartment.emit($event.value)"
+  [options]="departments"
+  filter="true"
+  filterBy="nombre"
+  optionLabel="nombre" placeholder="Departamento"
+  showClear="true" styleClass="w-full">
+</p-select>

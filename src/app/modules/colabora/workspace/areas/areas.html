@@ -1,0 +1,56 @@
+<h4>Áreas de operación</h4>
+<p-table [tableStyle]="{ 'min-width': '50rem' }" [value]="areas">
+    <ng-template #caption>
+        <div class="flex justify-between items-center">
+            <p-button
+                (onClick)="recargarAreas()"
+                [loading]="loading()"
+                icon="pi pi-refresh"
+                label="Recargar"
+                severity="secondary"
+                size="small" />
+            <p-button
+                (onClick)="abrirModalAgregar()"
+                [disabled]="loading()"
+                icon="pi pi-plus"
+                label="Agregar Área"
+                severity="primary"
+                size="small" />
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th>Nombre</th>
+            <th>Externo</th>
+            <th>Generar folio</th>
+            <th>Acciones</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-area>
+        <tr>
+            <td>{{ area.nombre }}</td>
+            <td>
+                <i [ngClass]="area.externo ? 'pi-check text-green-500' : 'pi-times text-red-500'" class="pi"></i>
+                {{ area.externo ? 'Sí' : 'No' }}
+            </td>
+            <td>
+                <i [ngClass]="area.generarFolio ? 'pi-check text-green-500' : 'pi-times text-red-500'" class="pi"></i>
+                {{ area.generarFolio ? 'Sí' : 'No' }}
+            </td>
+            <td class="flex gap-3">
+                <p-button
+                    (onClick)="abrirModalEditar(area)"
+                    [disabled]="loading()"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small" />
+                <p-button
+                    (onClick)="eliminarArea(area)"
+                    [disabled]="loading()"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>

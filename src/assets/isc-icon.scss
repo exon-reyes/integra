@@ -1,0 +1,19 @@
+.isc {
+    display: inline-block;
+    width: 1.3rem;   /* tamaño default */
+    height: 1.3rem;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+.isc-registry {
+    background-image: url('/assets/icon/isc/registry.svg');
+}
+.isc-report {
+    background-image: url('/assets/icon/isc/audit-report.svg');
+}
+.isc-company {
+    background-image: url('/assets/icon/isc/company.svg');
+}
+

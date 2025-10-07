@@ -1,0 +1,16 @@
+<p-select
+  (onChange)="selectedUnit.emit($event.value)"
+  [options]="units"
+  filter="true"
+  filterBy="clave,nombre"
+  optionLabel="nombre" placeholder="Unidad de negocio"
+  showClear="true" styleClass="w-full">
+  <ng-template #item let-unidad>
+    <div class="w-full">
+      <div>{{ unidad["nombre"] }}</div>
+    </div>
+  </ng-template>
+  <ng-template #selectedItem let-u>
+    <div class="flex items-center gap-">{{ u["nombre"] }}</div>
+  </ng-template>
+</p-select>

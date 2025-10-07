@@ -1,0 +1,14 @@
+<div class="card mb-0">
+  <div class="flex justify-between mb-4">
+    <div>
+      <span class="block text-muted-color font-medium mb-4">{{ title }}</span>
+      <div class="text-surface-900  font-medium text-2xl">{{ value }}</div>
+    </div>
+    @if(icon_path){
+      <div class="flex items-center justify-center bg-blue-100 rounded-border" style="width: 3.5rem; height: 3.5rem">
+        <img alt="icon" height="27" [ngSrc]="icon_path" width="27">
+      </div>
+    }
+  </div>
+  <ng-content></ng-content>
+</div>

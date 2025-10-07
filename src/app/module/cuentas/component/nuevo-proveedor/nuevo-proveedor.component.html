@@ -1,0 +1,10 @@
+<div class="flex items-center gap-4 mb-4">
+  <input autocomplete="off" class="flex-auto" id="prov" pInputText placeholder="Nombre del proveedor"/>
+</div>
+<div class="flex items-center gap-4 mb-8">
+  <input autocomplete="off" class="flex-auto" id="icon" pInputText placeholder="icono.svg"/>
+</div>
+<div class="flex justify-end gap-2">
+  <p-button (click)="success.emit(false)" label="Cancel" severity="secondary"/>
+  <p-button (click)="success.emit(true)" label="Save"/>
+</div>

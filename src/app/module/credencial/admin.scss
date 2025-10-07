@@ -1,0 +1,37 @@
+/* Credenciales admin styles */
+.admin-panel {
+  .p-datatable {
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem 0.5rem;
+    }
+  }
+
+  .p-multiselect {
+    width: 100%;
+  }
+
+  .p-dropdown {
+    width: 100%;
+  }
+
+  .p-password {
+    width: 100%;
+  }
+
+  .p-inputtextarea {
+    width: 100%;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-panel {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .p-datatable {
+      font-size: 0.875rem;
+    }
+  }
+}

@@ -1,0 +1,117 @@
+<app-title
+    title="Colaboración de observaciones"
+    description="Visualiza y aporta a las observaciones donde tu departamento ha sido incluido como colaborador"
+    imageSrc="assets/icon/ireport.svg"></app-title>
+<p-menubar [model]="items" breakpoint="300px" class="my-2" />
+<p-table #dt
+         [globalFilterFields]="['creado','folio','titulo.nombre', 'area.nombre','unidad.clave','unidad.nombre','estatus.nombre']"
+         [loading]="pagina.loading"
+         [scrollable]="true"
+         [value]="observaciones"
+         class="rounded-2xl  shadow-lg bg-white h-[calc(100vh-218px)]"
+         scrollHeight="flex">
+    <ng-template #caption>
+        <div class="flex justify-start gap-2">
+            <p-iconfield>
+                <p-inputicon class="pi pi-search" />
+                <input (input)="dt.filterGlobal($any($event.target).value, 'contains')" [(ngModel)]="searchValue"
+                       class="w-52"
+                       pInputText placeholder="Buscar en resultados" type="text" />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th class="md:min-w-60 min-w-58" pSortableColumn="folio">Folio
+                <p-sortIcon field="folio" />
+            </th>
+            <th class="min-w-32" pSortableColumn="estatus.nombre">Estado
+                <p-sortIcon field="estatus.nombre" />
+            </th>
+            <th class="min-w-96" pSortableColumn="unidadReportada.clave">Unidad
+                <p-sortIcon field="unidadReportada.clave" />
+            </th>
+            <th class="min-w-65" pSortableColumn="departamentoResponsable.nombre">Departamento responsable
+                <p-sortIcon field="departamentoResponsable.nombre" />
+            </th>
+            <th class="min-w-48" pSortableColumn="fechaCreacion">Registrado
+                <p-sortIcon field="fechaCreacion" />
+            </th>
+            <th>Acciones</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-ticket>
+        <tr>
+            <td>
+                <div class="font-bold">{{ ticket.folio.folio }}</div>
+                <div>{{ ticket.titulo }}</div>
+                <span class="inline-block px-2 py-0.5 text-xs font-medium text-orange-700 bg-orange-100 rounded-full">Generado por {{ ticket.departamentoOrigen.nombre }}</span>
+            </td>
+            <td>
+                <div
+                    [ngClass]="obtenerGravedad(ticket.estatus.id)"
+                    class="rounded-lg min-w-24 text-center text-sm font-medium text-white p-1">
+                    {{ ticket.estatus.nombre }}
+                </div>
+            </td>
+            <!--            <td>{{ ticket.area.nombre }}</td>-->
+            <td>{{ ticket.unidadReportada.clave }} {{ ticket.unidadReportada.nombre }}</td>
+            <td>{{ ticket.departamentoResponsable.nombre }}</td>
+            <td>{{ ticket.fechaCreacion | date: 'dd/MM/yy h:mm a' }}</td>
+            <td>
+                <div class="flex flex-row gap-2">
+                    <ng-container *hasPermission="'TKT_FU'">
+                        @if (ticket.estatus.nombre.toLowerCase() !== 'cerrado') {
+                            <p-button icon="pi pi-plus" severity="success"
+                                      (onClick)="openModalSeguimiento(ticket)"></p-button>
+                        }
+                    </ng-container>
+                    <ng-container *hasPermission="'TKT_R'">
+                        <p-button [routerLink]="['/reporte/detalles', ticket.folio]" icon="pi pi-inbox"></p-button>
+                    </ng-container>
+                    <button-copy [data]="buildCopyString(ticket)" severity="primary"></button-copy>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #loadingicon>
+        <app-spinner></app-spinner>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr>
+            <td colspan="7">
+                <div class="flex mx-2 my-4">
+                    <app-title
+                        description="Intente sincronizar o aplicar otros criterios de búsqueda."
+                        imageSrc="assets/icon/notfound.svg"
+                        title="Sin registros" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #summary>
+        <div class="flex justify-center">
+            <p-paginator
+                (onPageChange)="onPageChange($event)"
+                [first]="pagina.first"
+                [rowsPerPageOptions]="[10, 20, 30]"
+                [rows]="pagina.rows"
+                [totalRecords]="pagina.totalRecords"
+                currentPageReportTemplate="{first} - {last} de {totalRecords}" />
+        </div>
+    </ng-template>
+</p-table>
+
+<!--CONSULTAR TICKET POR FOLIO-->
+@defer (when searchTicketStatus; prefetch when searchTicketStatus) {
+    <buscar-folio [visible]="searchTicketStatus" (cerrar)="searchTicketStatus=false"
+                  (buscarFolio)="onBuscarFolio($event)"></buscar-folio>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}
+@defer (when openCustomFilter; prefetch when openCustomFilter == true) {
+    <filtro-personalizado [visible]="openCustomFilter" (cerrar)="openCustomFilter=false"
+                          (filtrosAplicados)="onCustomFilterApplied()"></filtro-personalizado>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}

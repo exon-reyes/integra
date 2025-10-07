@@ -1,0 +1,19 @@
+<div class="w-full  p-9 bg-yellow-50 shadow-xl">
+  <div class="flex flex-col py-2 items-center">
+    <div class="font-bold">REPORTE | {{ ticket.area.nombre|uppercase }}</div>
+    <div class="font-bold text-red-600  text-lg">{{ ticket.unidad.nombre }}</div>
+    <div class="mt-3 text-gray-500">Tipo</div>
+    <div class="font-bold  ">{{ ticket.titulo.nombre }}</div>
+
+    <div class="mt-3 text-gray-500">Folio de seguimiento</div>
+    <div class="text-red-600 font-bold">{{ ticket.folio }}</div>
+
+    <div class="mt-3 text-gray-500">Estado</div>
+    <div class=" font-bold ">{{ ticket.estatus.nombre }}</div>
+
+    @if (ticket.agente) {
+      <div class="mt-3 text-gray-500">Atiende</div>
+      <div class="font-bol">{{ ticket.agente }}</div>
+    }
+  </div>
+</div>

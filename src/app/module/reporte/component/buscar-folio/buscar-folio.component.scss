@@ -1,0 +1,22 @@
+.buscar-form {
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        input {
+            padding: 0.75rem;
+        }
+
+        .p-error {
+            color: var(--red-500);
+            font-size: 0.875rem;
+        }
+    }
+}
