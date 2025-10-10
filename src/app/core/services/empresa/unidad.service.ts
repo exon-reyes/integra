@@ -1,11 +1,11 @@
-import {Injectable} from '@angular/core';
-import {Observable, of} from 'rxjs';
-import {tap} from 'rxjs/operators';
-import {ResponseData} from '@/shared/util/responseData';
-import {environment} from '@env/environment';
-import {Unidad} from '@/models/empresa/unidad';
-import {HorarioOperativo} from '@/models/empresa/horario-operativo';
-import {AbstractService} from '@/shared/service/abstract-service';
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { ResponseData } from '@/shared/util/responseData';
+import { environment } from '@env/environment';
+import { Unidad } from '@/models/empresa/unidad';
+import { HorarioOperativo } from '@/models/empresa/horario-operativo';
+import { AbstractService } from '@/shared/service/abstract-service';
 
 @Injectable({
     providedIn: 'root'
@@ -26,18 +26,20 @@ export class UnidadService extends AbstractService {
         if (this.data && this.cacheTimestamp && now - this.cacheTimestamp < this.cacheDurationMs) {
             return of(this.data);
         } else {
-            return this.http.get<ResponseData<Unidad[]>>(`${this.apiUrl}/unidades`).pipe(tap((data) => {
-                this.data = data;
-                this.cacheTimestamp = now;
-                localStorage.setItem('unidades', JSON.stringify(data));
-                localStorage.setItem('unidades_timestamp', this.cacheTimestamp.toString());
-            }));
+            return this.http.get<ResponseData<Unidad[]>>(`${this.apiUrl}/unidades`).pipe(
+                tap((data) => {
+                    this.data = data;
+                    this.cacheTimestamp = now;
+                    localStorage.setItem('unidades', JSON.stringify(data));
+                    localStorage.setItem('unidades_timestamp', this.cacheTimestamp.toString());
+                })
+            );
         }
     }
 
     obtenerContacto(idUnidad): Observable<ResponseData<Unidad>> {
         return this.http.get<ResponseData<Unidad>>(`${this.apiUrl}/unidades/contacto/${idUnidad}`, {
-            params: {idUnidad}
+            params: { idUnidad }
         });
     }
 
@@ -69,6 +71,10 @@ export class UnidadService extends AbstractService {
         localStorage.removeItem('unidades_timestamp');
         this.data = undefined;
         this.cacheTimestamp = undefined;
+    }
+
+    obtenerUnidadesActivas() {
+        return this.http.get<ResponseData<Unidad[]>>(`${this.apiUrl}/unidades/activas`);
     }
     private leerLocalStorage(): void {
         const data = localStorage.getItem('unidades');

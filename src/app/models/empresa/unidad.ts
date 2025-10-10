@@ -4,16 +4,20 @@ import { Contacto } from '@/models/ubicacion/contacto';
 import { Empleado } from '@/models/empleado/empleado';
 
 export interface Unidad {
-  id?: number;
-  clave?: string;
-  nombre?: string;
-  empresa?: Empresa;
-  nivelOperativo?: string;
-  nombreCompleto?:string;
-  actualizado?: Date;
-  operativo?: boolean;
-  activo?: boolean;
-  contacto?: Contacto;
-  supervisor?: Empleado;
-  horarios?: HorarioOperativo[];
+    id?: number;
+    clave?: string;
+    nombre?: string;
+    empresa?: Empresa;
+    nivelOperativo?: string;
+    nombreCompleto?: string;
+    actualizado?: Date;
+    operativo?: boolean;
+    activo?: boolean;
+    contacto?: Contacto;
+    requiereCamara?: boolean;
+    supervisor?: Empleado;
+    horarios?: HorarioOperativo[];
+    requiereCodigo?: boolean;
+    codigoAutorizacionKiosco?: string;
+    versionKiosco?:number;
 }

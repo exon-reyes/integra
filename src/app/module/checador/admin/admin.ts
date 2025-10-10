@@ -90,7 +90,6 @@ export class Admin implements OnInit {
             params.desde = desde ? fechaISOString(desde) : null;
             params.hasta = hasta ? fechaISOString(obtenerFinDia(hasta)) : null;
         }
-        debugger
         console.log(params);
         this.asistencias.obtenerAsistencias(params).subscribe({
             next: (value) => {
