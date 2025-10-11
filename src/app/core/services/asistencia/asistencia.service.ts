@@ -69,7 +69,9 @@ export class AsistenciaService {
     obtenerAsistencias(params) {
         return this.http.get<ResponseData<EmpleadoReporte[]>>(`${this.apiUrl}/asistencias`, { params: params });
     }
-
+    get apiUrlImagen(): string {
+        return this.apiUrl;
+    }
     descargarExcel(params?: any) {
         return this.http.get(`${this.apiUrl}/asistencias/detallado/excel`, {
             responseType: 'blob',

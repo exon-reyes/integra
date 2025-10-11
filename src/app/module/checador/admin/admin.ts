@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgOptimizedImage } from '@angular/common';
 import { Button } from 'primeng/button';
 import { AsistenciaService, EmpleadoReporte, EmpleadoReporteRequest } from '@/core/services/asistencia/asistencia.service';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +25,10 @@ import { fechaISOString, obtenerFinDia } from '@/shared/util/date.util';
     templateUrl: './admin.html'
 })
 export class Admin implements OnInit {
+    errorCargaFoto = false;
+    urlFotoSeleccionada = '';
+    tituloFoto = '';
+    mostrarModalFoto = false;
     empleados: EmpleadoReporte[] = [];
     expandedRows: { [key: string]: boolean } = {};
     // Modal filtros
@@ -44,11 +48,6 @@ export class Admin implements OnInit {
     filtroPuesto: number;
     filtroEmpleado: number;
     rangeDates: Date[] = [];
-
-    // Modal fotos
-    mostrarModalFoto = false;
-    fotoSeleccionada = '';
-    tituloFoto = '';
     private asistencias = inject(AsistenciaService);
     private empleadoService = inject(EmpleadoService);
     private unidadService = inject(UnidadService);
@@ -58,6 +57,30 @@ export class Admin implements OnInit {
 
     get jornadasAbiertas(): number {
         return this.empleados.reduce((total, emp) => total + emp.asistencias.filter((a) => !a.jornadaCerrada).length, 0);
+    }
+
+    /**
+     * Maneja el error cuando la imagen no puede cargarse
+     */
+    onErrorImagen(): void {
+        this.errorCargaFoto = true;
+    }
+
+    /**
+     * Prepara y muestra el modal con la foto de asistencia.
+     */
+    verFoto(pathFoto: string, tipo: string, fecha: string) {
+        this.errorCargaFoto = false; // Resetear estado
+        this.urlFotoSeleccionada = `${this.asistencias.apiUrlImagen}/${pathFoto}`;
+
+        const fechaFormateada = new Date(fecha).toLocaleDateString('es-MX', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        this.tituloFoto = `Foto ${tipo} - ${fechaFormateada}`;
+        this.mostrarModalFoto = true;
     }
 
     ngOnInit() {
@@ -85,7 +108,9 @@ export class Admin implements OnInit {
         }
 
         if (this.rangeDates.length === 2) {
-            if (this.rangeDates[1]==null){return}
+            if (this.rangeDates[1] == null) {
+                return;
+            }
             const [desde, hasta] = this.rangeDates;
             params.desde = desde ? fechaISOString(desde) : null;
             params.hasta = hasta ? fechaISOString(obtenerFinDia(hasta)) : null;
@@ -105,11 +130,7 @@ export class Admin implements OnInit {
         });
     }
     cargarOpcionesFiltros() {
-        forkJoin([
-            this.unidadService.obtenerUnidades(),
-            this.puestoService.obtenerPuestos(),
-            this.empleadoService.obtenerSoloEmpleados()
-        ]).subscribe({
+        forkJoin([this.unidadService.obtenerUnidades(), this.puestoService.obtenerPuestos(), this.empleadoService.obtenerSoloEmpleados()]).subscribe({
             next: ([unidadesResp, puestosResp, empleadosResp]) => {
                 this.unidades.set(unidadesResp.data.filter((unidad) => unidad.activo));
                 this.puestos.set(puestosResp.data);
@@ -144,12 +165,6 @@ export class Admin implements OnInit {
         if (!fecha || fecha.length !== 10) return null;
         const [dia, mes, año] = fecha.split('/');
         return `${año}-${mes}-${dia}`;
-    }
-
-    verFoto(pathFoto: string, tipo: string, fecha: string) {
-        this.fotoSeleccionada = pathFoto;
-        this.tituloFoto = `Foto ${tipo} - ${fecha}`;
-        this.mostrarModalFoto = true;
     }
 
     obtenerDuracionJornada(asistencia: any): number {

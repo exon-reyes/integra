@@ -7,5 +7,6 @@ export interface Empleado {
   nombre: string;
   jornadaIniciada: boolean;
   esNocturno: boolean;
-  tipoPausa: TipoPausa | null; //
+  tipoPausa: TipoPausa | null;
+  idUnidad?:number;
 }

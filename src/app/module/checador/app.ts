@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { catchError, finalize, Observable, of, retry, shareReplay, Subject, switchMap, takeUntil, timeout, TimeoutError } from 'rxjs';
+import { catchError, finalize, Observable, of, retry, Subject, switchMap, takeUntil, timeout, TimeoutError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { WebcamImage, WebcamInitError, WebcamModule } from 'ngx-webcam';
 import { WorktimeService } from '@/module/checador/service/worktime.service';
@@ -28,122 +28,137 @@ interface ConfiguracionSistema {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit, AfterViewInit, OnDestroy {
-
-    // ========== SIGNALS PARA MEJOR RENDIMIENTO ==========
-    private readonly vistaActualSignal = signal<'reloj' | 'webcam' | 'empleado'>('reloj');
-    private readonly empleadoSignal = signal<Empleado | null>(null);
-    private readonly isLoadingSignal = signal(false);
-    private readonly isUploadingSignal = signal(false);
-    private readonly errorApiSignal = signal<string | null>(null);
-    private readonly accionActualSignal = signal<Accion | null>(null);
-    private readonly pausaActualSignal = signal<TipoPausa | null>(null);
-
-    // Webcam signals
-    private readonly fotoCapturadaSignal = signal<WebcamImage | null>(null);
-    private readonly webcamErrorSignal = signal<string | null>(null);
-    private readonly cameraPermissionGrantedSignal = signal(false);
-    private readonly countdownSignal = signal<number | null>(null);
-
-    // Clock signals
-    private readonly fechaFormateadaSignal = signal('');
-    private readonly horaFormateadaSignal = signal('');
-
-    // Keypad signals
-    private readonly valorIngresadoSignal = signal('');
-
-    // UI signals
-    private readonly showSuccessMessageSignal = signal(false);
-    private readonly successMessageTextSignal = signal('');
-
-    // Configuration signals
-    private readonly configuracionSignal = signal<ConfiguracionSistema>(
-        this.cargarConfiguracionDesdeStorage()
-    );
-    private readonly mostrarConfigSignal = signal(false);
-    private readonly codigoConfigSignal = signal('');
-
-    // Unit selection signals
-    private readonly unidadesSignal = signal<any[]>([]);
-    private readonly unidadSeleccionadaSignal = signal<any | null>(null);
-    private readonly mostrarModalUnidadSignal = signal(false);
-    private readonly isLoadingUnidadesSignal = signal(false);
-
-    // Configuration modal signals
-    private readonly mostrarModalConfiguracionSignal = signal(false);
-    private readonly mostrarInputResetSignal = signal(false);
-    private readonly codigoResetSignal = signal('');
-    private readonly isLoadingResetSignal = signal(false);
-
-    // Sin Cámara signals
-    private readonly mostrarModalSinCamaraSignal = signal(false);
-    private readonly codigoSinCamaraSignal = signal('');
-    private readonly isLoadingSinCamaraSignal = signal(false);
-
-    // ========== COMPUTED PROPERTIES ==========
-    readonly vistaActual = this.vistaActualSignal.asReadonly();
-    readonly empleado = this.empleadoSignal.asReadonly();
-    readonly isLoading = this.isLoadingSignal.asReadonly();
-    readonly isUploading = this.isUploadingSignal.asReadonly();
-    readonly errorApi = this.errorApiSignal.asReadonly();
-    readonly accionActual = this.accionActualSignal.asReadonly();
-    readonly pausaActual = this.pausaActualSignal.asReadonly();
-    readonly fotoCapturada = this.fotoCapturadaSignal.asReadonly();
-    readonly webcamError = this.webcamErrorSignal.asReadonly();
-    readonly cameraPermissionGranted = this.cameraPermissionGrantedSignal.asReadonly();
-    readonly countdown = this.countdownSignal.asReadonly();
-    readonly fechaFormateada = this.fechaFormateadaSignal.asReadonly();
-    readonly horaFormateada = this.horaFormateadaSignal.asReadonly();
-    readonly valorIngresado = this.valorIngresadoSignal.asReadonly();
-    readonly showSuccessMessage = this.showSuccessMessageSignal.asReadonly();
-    readonly successMessageText = this.successMessageTextSignal.asReadonly();
-    readonly configuracion = this.configuracionSignal.asReadonly();
-    readonly mostrarConfig = this.mostrarConfigSignal.asReadonly();
-    readonly codigoConfig = this.codigoConfigSignal.asReadonly();
-    readonly unidades = this.unidadesSignal.asReadonly();
-    readonly unidadSeleccionada = this.unidadSeleccionadaSignal.asReadonly();
-    readonly mostrarModalUnidad = this.mostrarModalUnidadSignal.asReadonly();
-    readonly isLoadingUnidades = this.isLoadingUnidadesSignal.asReadonly();
-    readonly mostrarModalConfiguracion = this.mostrarModalConfiguracionSignal.asReadonly();
-    readonly mostrarInputReset = this.mostrarInputResetSignal.asReadonly();
-    readonly codigoReset = this.codigoResetSignal.asReadonly();
-    readonly isLoadingReset = this.isLoadingResetSignal.asReadonly();
-    readonly mostrarModalSinCamara = this.mostrarModalSinCamaraSignal.asReadonly();
-    readonly codigoSinCamara = this.codigoSinCamaraSignal.asReadonly();
-    readonly isLoadingSinCamara = this.isLoadingSinCamaraSignal.asReadonly();
-
-    // Computed para máscara (evita recálculos innecesarios)
-    readonly mascara = computed(() => '*'.repeat(this.valorIngresado().length));
-    // Computed para modo sin cámara
-    readonly modoSinCamara = computed(() => !this.configuracion().requiereCamara);
-
-    // ========== OPTIMIZACIONES DE RENDIMIENTO ==========
-    private readonly trigger = new Subject<void>();
-    private readonly destroy$ = new Subject<void>();
-    private capturaAutomaticaTimerId?: number;
-    private countdownIntervalId?: number;
-    private intervalId?: number;
-
-    @ViewChild('codeInput') private codeInput!: ElementRef<HTMLInputElement>;
-    @ViewChild('resetInput') private resetInput!: ElementRef<HTMLInputElement>;
-    @ViewChild('sinCamaraInput') private sinCamaraInput!: ElementRef<HTMLInputElement>;
-    private readonly checadorService = inject(WorktimeService);
-    private readonly kioscoConfig = inject(KioscoConfigService);
-
     // Constantes estáticas para evitar recreación
     private static readonly MAX_LENGTH = 8;
     private static readonly TIMEOUT_MS = 10000; // 10s timeout
     private static readonly RETRY_COUNT = 2;
     private static readonly CODIGO_ADMIN = '1234'; // Código para activar modo sin cámara
     private static readonly FECHA_OPTIONS: Intl.DateTimeFormatOptions = Object.freeze({
-        weekday: 'long', day: 'numeric', month: 'long'
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
     });
     private static readonly HORA_OPTIONS: Intl.DateTimeFormatOptions = Object.freeze({
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
     });
-
+    // Computed para máscara (evita recálculos innecesarios)
+    readonly mascara = computed(() => '*'.repeat(this.valorIngresado().length));
+    // Computed para modo sin cámara
+    readonly modoSinCamara = computed(() => !this.configuracion().requiereCamara);
+    // ========== SIGNALS PARA MEJOR RENDIMIENTO ==========
+    private readonly vistaActualSignal = signal<'reloj' | 'webcam' | 'empleado'>('reloj');
+    // ========== COMPUTED PROPERTIES ==========
+    readonly vistaActual = this.vistaActualSignal.asReadonly();
+    private readonly empleadoSignal = signal<Empleado | null>(null);
+    readonly empleado = this.empleadoSignal.asReadonly();
+    private readonly isLoadingSignal = signal(false);
+    readonly isLoading = this.isLoadingSignal.asReadonly();
+    private readonly isUploadingSignal = signal(false);
+    readonly isUploading = this.isUploadingSignal.asReadonly();
+    private readonly errorApiSignal = signal<string | null>(null);
+    readonly errorApi = this.errorApiSignal.asReadonly();
+    private readonly accionActualSignal = signal<Accion | null>(null);
+    readonly accionActual = this.accionActualSignal.asReadonly();
+    private readonly pausaActualSignal = signal<TipoPausa | null>(null);
+    readonly pausaActual = this.pausaActualSignal.asReadonly();
+    // Webcam signals
+    private readonly fotoCapturadaSignal = signal<WebcamImage | null>(null);
+    readonly fotoCapturada = this.fotoCapturadaSignal.asReadonly();
+    private readonly webcamErrorSignal = signal<string | null>(null);
+    readonly webcamError = this.webcamErrorSignal.asReadonly();
+    private readonly cameraPermissionGrantedSignal = signal(false);
+    readonly cameraPermissionGranted = this.cameraPermissionGrantedSignal.asReadonly();
+    private readonly countdownSignal = signal<number | null>(null);
+    readonly countdown = this.countdownSignal.asReadonly();
+    // Clock signals
+    private readonly fechaFormateadaSignal = signal('');
+    readonly fechaFormateada = this.fechaFormateadaSignal.asReadonly();
+    private readonly horaFormateadaSignal = signal('');
+    readonly horaFormateada = this.horaFormateadaSignal.asReadonly();
+    // Keypad signals
+    private readonly valorIngresadoSignal = signal('');
+    readonly valorIngresado = this.valorIngresadoSignal.asReadonly();
+    // UI signals
+    private readonly showSuccessMessageSignal = signal(false);
+    readonly showSuccessMessage = this.showSuccessMessageSignal.asReadonly();
+    private readonly successMessageTextSignal = signal('');
+    readonly successMessageText = this.successMessageTextSignal.asReadonly();
+    // Configuration signals
+    private readonly configuracionSignal = signal<ConfiguracionSistema>(this.cargarConfiguracionDesdeStorage());
+    readonly configuracion = this.configuracionSignal.asReadonly();
+    private readonly mostrarConfigSignal = signal(false);
+    readonly mostrarConfig = this.mostrarConfigSignal.asReadonly();
+    private readonly codigoConfigSignal = signal('');
+    readonly codigoConfig = this.codigoConfigSignal.asReadonly();
+    // Unit selection signals
+    private readonly unidadesSignal = signal<any[]>([]);
+    readonly unidades = this.unidadesSignal.asReadonly();
+    private readonly unidadSeleccionadaSignal = signal<any | null>(null);
+    readonly unidadSeleccionada = this.unidadSeleccionadaSignal.asReadonly();
+    private readonly mostrarModalUnidadSignal = signal(false);
+    readonly mostrarModalUnidad = this.mostrarModalUnidadSignal.asReadonly();
+    private readonly isLoadingUnidadesSignal = signal(false);
+    readonly isLoadingUnidades = this.isLoadingUnidadesSignal.asReadonly();
+    // Configuration modal signals
+    private readonly mostrarModalConfiguracionSignal = signal(false);
+    readonly mostrarModalConfiguracion = this.mostrarModalConfiguracionSignal.asReadonly();
+    private readonly mostrarInputResetSignal = signal(false);
+    readonly mostrarInputReset = this.mostrarInputResetSignal.asReadonly();
+    private readonly codigoResetSignal = signal('');
+    readonly codigoReset = this.codigoResetSignal.asReadonly();
+    private readonly isLoadingResetSignal = signal(false);
+    readonly isLoadingReset = this.isLoadingResetSignal.asReadonly();
+    // Sin Cámara signals
+    private readonly mostrarModalSinCamaraSignal = signal(false);
+    readonly mostrarModalSinCamara = this.mostrarModalSinCamaraSignal.asReadonly();
+    private readonly codigoSinCamaraSignal = signal('');
+    readonly codigoSinCamara = this.codigoSinCamaraSignal.asReadonly();
+    private readonly isLoadingSinCamaraSignal = signal(false);
+    readonly isLoadingSinCamara = this.isLoadingSinCamaraSignal.asReadonly();
+    // ========== OPTIMIZACIONES DE RENDIMIENTO ==========
+    private readonly trigger = new Subject<void>();
+    private readonly destroy$ = new Subject<void>();
+    private capturaAutomaticaTimerId?: number;
+    private countdownIntervalId?: number;
+    private intervalId?: number;
+    @ViewChild('codeInput') private codeInput!: ElementRef<HTMLInputElement>;
+    @ViewChild('resetInput') private resetInput!: ElementRef<HTMLInputElement>;
+    @ViewChild('sinCamaraInput') private sinCamaraInput!: ElementRef<HTMLInputElement>;
+    private readonly checadorService = inject(WorktimeService);
+    private readonly kioscoConfig = inject(KioscoConfigService);
     // Memoización para formateo de fecha/hora
     private fechaCache = { date: '', formatted: '' };
     private horaCache = { time: '', formatted: '' };
+    private readonly solicitarCodigo$ = new Subject<void>();
+    private readonly solicitarCodigoConfiguracion$ = this.solicitarCodigo$
+        .pipe(
+            switchMap(() => {
+                const unidadId = this.configuracionSignal().unidadId;
+                if (!unidadId) return of(null);
+
+                this.isLoadingSignal.set(true);
+                this.errorApiSignal.set(null);
+
+                return this.kioscoConfig.solicitarCodigo(unidadId).pipe(
+                    timeout(5000),
+                    catchError(() => {
+                        this.errorApiSignal.set('Error al solicitar código');
+                        return of(null);
+                    }),
+                    finalize(() => this.isLoadingSignal.set(false))
+                );
+            }),
+            takeUntil(this.destroy$)
+        )
+        .subscribe((response) => {
+            if (response?.success) {
+                this.mostrarMensajeExito('Código de configuración solicitado');
+                this.cerrarModalConfiguracion();
+            }
+        });
 
     public get triggerObservable(): Observable<void> {
         return this.trigger.asObservable();
@@ -175,45 +190,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
         this.limpiarTodosLosTimers();
-    }
-
-    // ========== OPTIMIZACIONES DE FECHA/HORA ==========
-    private actualizarFechaHora(): void {
-        const ahora = new Date();
-        const fechaKey = ahora.toDateString();
-        const horaKey = `${ahora.getHours()}:${ahora.getMinutes()}:${ahora.getSeconds()}`;
-
-        // Cache para fecha (cambia menos frecuentemente)
-        if (this.fechaCache.date !== fechaKey) {
-            this.fechaCache.date = fechaKey;
-            this.fechaCache.formatted = ahora.toLocaleDateString('es-ES', App.FECHA_OPTIONS);
-            this.fechaFormateadaSignal.set(this.fechaCache.formatted);
-        }
-
-        // Cache para hora
-        if (this.horaCache.time !== horaKey) {
-            this.horaCache.time = horaKey;
-            this.horaCache.formatted = ahora.toLocaleTimeString('es-ES', App.HORA_OPTIONS);
-            this.horaFormateadaSignal.set(this.horaCache.formatted);
-        }
-    }
-
-    // ========== OPTIMIZACIONES DE CÁMARA ==========
-    private async verificarPermisosCamara(): Promise<void> {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user',
-                    width: { ideal: 320 },
-                    height: { ideal: 240 }
-                }
-            });
-            this.cameraPermissionGrantedSignal.set(true);
-            stream.getTracks().forEach(track => track.stop());
-        } catch (error) {
-            this.cameraPermissionGrantedSignal.set(false);
-            console.warn('Permisos de cámara no otorgados:', error);
-        }
     }
 
     // ========== MÉTODOS DE TECLADO OPTIMIZADOS ==========
@@ -260,7 +236,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         this.isLoadingSignal.set(true);
         this.errorApiSignal.set(null);
 
-        this.checadorService.consultarEmpleadoPorNip(valor)
+        this.checadorService
+            .consultarEmpleadoPorNip(valor)
             .pipe(
                 timeout(App.TIMEOUT_MS), // Timeout para evitar esperas infinitas
                 retry(App.RETRY_COUNT), // Reintentos automáticos
@@ -272,7 +249,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
                 }),
                 finalize(() => this.isLoadingSignal.set(false))
             )
-            .subscribe(response => {
+            .subscribe((response) => {
                 this.valorIngresadoSignal.set('');
                 if (response?.success) {
                     this.empleadoSignal.set(response.data);
@@ -305,6 +282,318 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         this.iniciarCuentaRegresiva();
     }
 
+    tomarFoto(): void {
+        this.trigger.next();
+    }
+
+    handleImage(webcamImage: WebcamImage): void {
+        this.limpiarTimers();
+        this.fotoCapturadaSignal.set(webcamImage);
+        this.procesarImagen(webcamImage);
+    }
+
+    // ========== MÉTODOS PÚBLICOS PARA TEMPLATE ==========
+    handleInitError(error: WebcamInitError): void {
+        this.webcamErrorSignal.set(error.message);
+        console.error(error);
+        this.limpiarTimers();
+    }
+
+    reintentarCaptura(): void {
+        const accion = this.accionActualSignal();
+        const pausa = this.pausaActualSignal();
+        if (accion) {
+            this.iniciarCapturaFoto(accion, pausa || undefined);
+        }
+    }
+
+    regresarAVistaEmpleado(): void {
+        this.vistaActualSignal.set('empleado');
+        this.resetearCamara();
+        this.accionActualSignal.set(null);
+        this.pausaActualSignal.set(null);
+        this.limpiarTimers();
+    }
+
+    regresarAlReloj(): void {
+        this.vistaActualSignal.set('reloj');
+        this.resetearEstado();
+        this.limpiarTimers();
+        this.enfocarInputSiEsNecesario();
+    }
+
+    toggleConfiguracion(): void {
+        this.mostrarConfigSignal.set(!this.mostrarConfigSignal());
+        this.codigoConfigSignal.set('');
+    }
+
+    agregarDigitoConfig(digito: number): void {
+        const valorActual = this.codigoConfigSignal();
+        if (valorActual.length < 4) {
+            this.codigoConfigSignal.set(valorActual + digito.toString());
+        }
+    }
+
+    borrarConfig(): void {
+        const valorActual = this.codigoConfigSignal();
+        if (valorActual.length > 0) {
+            this.codigoConfigSignal.set(valorActual.slice(0, -1));
+        }
+    }
+
+    aplicarConfiguracion(): void {
+        const codigo = this.codigoConfigSignal();
+        if (codigo === App.CODIGO_ADMIN) {
+            const configActual = this.configuracionSignal();
+            const nuevaConfig = {
+                ...configActual,
+                requiereCamara: !configActual.requiereCamara
+            };
+
+            this.configuracionSignal.set(nuevaConfig);
+            this.guardarConfiguracionEnStorage(nuevaConfig); // Guardar en localStorage
+
+            this.mostrarConfigSignal.set(false);
+            this.codigoConfigSignal.set('');
+
+            const mensaje = nuevaConfig.requiereCamara ? 'Modo con cámara activado' : 'Modo sin cámara activado';
+            this.mostrarMensajeExito(mensaje);
+        } else {
+            this.errorApiSignal.set('Código incorrecto');
+            setTimeout(() => this.errorApiSignal.set(null), 2000);
+        }
+    }
+
+    seleccionarUnidad(unidad: any): void {
+        this.unidadSeleccionadaSignal.set(unidad);
+    }
+
+    guardarUnidadSeleccionada(): void {
+        const unidad = this.unidadSeleccionadaSignal();
+        if (!unidad) return;
+
+        try {
+            // Guardar en localStorage
+            localStorage.setItem('unidad_reloj', JSON.stringify(unidad));
+
+            // Actualizar configuración
+            const nuevaConfig: ConfiguracionSistema = {
+                unidadId: unidad.id,
+                requiereCamara: unidad.requiereCamara ?? true
+            };
+
+            this.configuracionSignal.set(nuevaConfig);
+            this.mostrarModalUnidadSignal.set(false);
+            this.unidadSeleccionadaSignal.set(null);
+        } catch (error) {
+            console.error('Error al guardar unidad:', error);
+            this.errorApiSignal.set('Error al guardar la unidad seleccionada');
+        }
+    }
+
+    // ========== MODAL DE CONFIGURACIÓN ==========
+    abrirModalConfiguracion(): void {
+        this.mostrarModalConfiguracionSignal.set(true);
+    }
+
+    cerrarModalConfiguracion(): void {
+        this.mostrarModalConfiguracionSignal.set(false);
+        this.mostrarInputResetSignal.set(false);
+        this.codigoResetSignal.set('');
+    }
+
+    activarInputReset(): void {
+        this.mostrarInputResetSignal.set(true);
+        setTimeout(() => {
+            this.resetInput?.nativeElement.focus();
+        }, 100);
+    }
+
+    agregarDigitoReset(digito: number): void {
+        const valorActual = this.codigoResetSignal();
+        if (valorActual.length < 5) {
+            this.codigoResetSignal.set(valorActual + digito.toString());
+        }
+    }
+
+    borrarDigitoReset(): void {
+        const valorActual = this.codigoResetSignal();
+        if (valorActual.length > 0) {
+            this.codigoResetSignal.set(valorActual.slice(0, -1));
+        }
+    }
+
+    ejecutarReset(): void {
+        const codigo = this.codigoResetSignal();
+        const unidadId = this.configuracionSignal().unidadId;
+
+        if (codigo.length !== 5 || !unidadId) return;
+
+        this.isLoadingResetSignal.set(true);
+        this.errorApiSignal.set(null);
+
+        this.kioscoConfig
+            .usarCodigoConfiguracion(unidadId, codigo)
+            .pipe(
+                timeout(5000),
+                takeUntil(this.destroy$),
+                finalize(() => this.isLoadingResetSignal.set(false))
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response?.success) {
+                        localStorage.removeItem('unidad_reloj');
+                        location.reload();
+                    }
+                },
+                error: (error: HttpErrorResponse) => {
+                    this.errorApiSignal.set(error.status === 409 ? 'Código inválido' : 'Error de reset');
+                }
+            });
+    }
+
+    sincronizarConfiguracion(): void {
+        const unidadId = this.configuracionSignal().unidadId;
+        if (!unidadId) return;
+
+        this.isLoadingSignal.set(true);
+        this.errorApiSignal.set(null);
+
+        this.kioscoConfig
+            .obtenerUnidadKiosco(unidadId)
+            .pipe(
+                timeout(5000),
+                takeUntil(this.destroy$),
+                finalize(() => this.isLoadingSignal.set(false))
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response?.success && response.data) {
+                        const nuevaConfig: ConfiguracionSistema = {
+                            unidadId: response.data.id,
+                            requiereCamara: response.data.requiereCamara ?? true
+                        };
+                        this.configuracionSignal.set(nuevaConfig);
+                        localStorage.setItem('unidad_reloj', JSON.stringify(response.data));
+                        this.cerrarModalConfiguracion();
+                    }
+                },
+                error: () => this.errorApiSignal.set('Error al sincronizar')
+            });
+    }
+
+    // ========== MODAL SIN CÁMARA ==========
+    activarCodigoSinCamara(): void {
+        this.mostrarModalSinCamaraSignal.set(true);
+        this.codigoSinCamaraSignal.set('');
+        this.errorApiSignal.set(null);
+        setTimeout(() => {
+            this.sinCamaraInput?.nativeElement.focus();
+        }, 100);
+    }
+
+    cerrarModalSinCamara(): void {
+        this.mostrarModalSinCamaraSignal.set(false);
+        this.codigoSinCamaraSignal.set('');
+        this.errorApiSignal.set(null);
+    }
+
+    agregarDigitoSinCamara(digito: number): void {
+        const valorActual = this.codigoSinCamaraSignal();
+        if (valorActual.length < 5) {
+            this.codigoSinCamaraSignal.set(valorActual + digito.toString());
+        }
+    }
+
+    borrarDigitoSinCamara(): void {
+        const valorActual = this.codigoSinCamaraSignal();
+        if (valorActual.length > 0) {
+            this.codigoSinCamaraSignal.set(valorActual.slice(0, -1));
+        }
+    }
+
+    confirmarCodigoSinCamara(): void {
+        const codigo = this.codigoSinCamaraSignal();
+        const unidadId = this.configuracionSignal().unidadId;
+
+        if (codigo.length !== 5 || !unidadId) return;
+
+        this.isLoadingSinCamaraSignal.set(true);
+        this.errorApiSignal.set(null);
+
+        this.kioscoConfig
+            .usarCodigoConfiguracion(unidadId, codigo)
+            .pipe(
+                takeUntil(this.destroy$),
+                finalize(() => this.isLoadingSinCamaraSignal.set(false))
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response?.success) {
+                        const nuevaConfig: ConfiguracionSistema = {
+                            unidadId: unidadId,
+                            requiereCamara: false
+                        };
+                        this.configuracionSignal.set(nuevaConfig);
+
+                        // Actualizar localStorage manteniendo otros datos
+                        const unidadActual = JSON.parse(localStorage.getItem('unidad_reloj') || '{}');
+                        unidadActual.requiereCamara = false;
+                        localStorage.setItem('unidad_reloj', JSON.stringify(unidadActual));
+
+                        this.cerrarModalSinCamara();
+                        this.mostrarMensajeExito('Modo sin cámara activado');
+                    }
+                },
+                error: (error: HttpErrorResponse) => {
+                    this.errorApiSignal.set(error.status === 409 ? 'Código inválido' : 'Error al confirmar código');
+                }
+            });
+    }
+
+    solicitarCodigoConfiguracion(): void {
+        this.solicitarCodigo$.next();
+    }
+
+    // ========== OPTIMIZACIONES DE FECHA/HORA ==========
+    private actualizarFechaHora(): void {
+        const ahora = new Date();
+        const fechaKey = ahora.toDateString();
+        const horaKey = `${ahora.getHours()}:${ahora.getMinutes()}:${ahora.getSeconds()}`;
+
+        // Cache para fecha (cambia menos frecuentemente)
+        if (this.fechaCache.date !== fechaKey) {
+            this.fechaCache.date = fechaKey;
+            this.fechaCache.formatted = ahora.toLocaleDateString('es-ES', App.FECHA_OPTIONS);
+            this.fechaFormateadaSignal.set(this.fechaCache.formatted);
+        }
+
+        // Cache para hora
+        if (this.horaCache.time !== horaKey) {
+            this.horaCache.time = horaKey;
+            this.horaCache.formatted = ahora.toLocaleTimeString('es-ES', App.HORA_OPTIONS);
+            this.horaFormateadaSignal.set(this.horaCache.formatted);
+        }
+    }
+
+    // ========== OPTIMIZACIONES DE CÁMARA ==========
+    private async verificarPermisosCamara(): Promise<void> {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 320 },
+                    height: { ideal: 240 }
+                }
+            });
+            this.cameraPermissionGrantedSignal.set(true);
+            stream.getTracks().forEach((track) => track.stop());
+        } catch (error) {
+            this.cameraPermissionGrantedSignal.set(false);
+            console.warn('Permisos de cámara no otorgados:', error);
+        }
+    }
+
     private iniciarCuentaRegresiva(): void {
         this.countdownSignal.set(5);
 
@@ -323,23 +612,13 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         }, 5000);
     }
 
-    tomarFoto(): void {
-        this.trigger.next();
-    }
-
-    handleImage(webcamImage: WebcamImage): void {
-        this.limpiarTimers();
-        this.fotoCapturadaSignal.set(webcamImage);
-        this.procesarImagen(webcamImage);
-    }
-
     // ========== PROCESAMIENTO DE IMAGEN CON ALTA DISPONIBILIDAD ==========
     private procesarImagen(webcamImage: WebcamImage): void {
         const empleado = this.empleadoSignal();
         const accion = this.accionActualSignal();
 
         if (!empleado || !accion) {
-            this.errorApiSignal.set("Error: Faltan datos para procesar la solicitud.");
+            this.errorApiSignal.set('Error: Faltan datos para procesar la solicitud.');
             return;
         }
 
@@ -349,23 +628,25 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         const { apiCall, successMessage } = this.obtenerConfiguracionAccion(webcamImage);
         if (!apiCall) return;
 
-        apiCall.pipe(
-            timeout(App.TIMEOUT_MS * 2), // Más tiempo para upload
-            takeUntil(this.destroy$),
-            finalize(() => this.isUploadingSignal.set(false)),
-            catchError((error: HttpErrorResponse) => {
-                console.error('Error en procesamiento:', error);
-                this.errorApiSignal.set(this.obtenerMensajeErrorProcesamiento(error));
-                return of(null);
-            })
-        ).subscribe(response => {
-            if (response?.success) {
-                this.mostrarMensajeExito(successMessage);
-            }
-        });
+        apiCall
+            .pipe(
+                timeout(App.TIMEOUT_MS * 2), // Más tiempo para upload
+                takeUntil(this.destroy$),
+                finalize(() => this.isUploadingSignal.set(false)),
+                catchError((error: HttpErrorResponse) => {
+                    console.error('Error en procesamiento:', error);
+                    this.errorApiSignal.set(this.obtenerMensajeErrorProcesamiento(error));
+                    return of(null);
+                })
+            )
+            .subscribe((response) => {
+                if (response?.success) {
+                    this.mostrarMensajeExito(successMessage);
+                }
+            });
     }
 
-    private obtenerConfiguracionAccion(webcamImage: WebcamImage): { apiCall: Observable<any> | null, successMessage: string } {
+    private obtenerConfiguracionAccion(webcamImage: WebcamImage): { apiCall: Observable<any> | null; successMessage: string } {
         const empleado = this.empleadoSignal()!;
         const accion = this.accionActualSignal()!;
         const pausa = this.pausaActualSignal();
@@ -397,7 +678,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:
-                this.errorApiSignal.set("Acción no reconocida.");
+                this.errorApiSignal.set('Acción no reconocida.');
                 return { apiCall: null, successMessage: '' };
         }
     }
@@ -509,36 +790,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    // ========== MÉTODOS PÚBLICOS PARA TEMPLATE ==========
-    handleInitError(error: WebcamInitError): void {
-        this.webcamErrorSignal.set(error.message);
-        console.error(error);
-        this.limpiarTimers();
-    }
-
-    reintentarCaptura(): void {
-        const accion = this.accionActualSignal();
-        const pausa = this.pausaActualSignal();
-        if (accion) {
-            this.iniciarCapturaFoto(accion, pausa || undefined);
-        }
-    }
-
-    regresarAVistaEmpleado(): void {
-        this.vistaActualSignal.set('empleado');
-        this.resetearCamara();
-        this.accionActualSignal.set(null);
-        this.pausaActualSignal.set(null);
-        this.limpiarTimers();
-    }
-
-    regresarAlReloj(): void {
-        this.vistaActualSignal.set('reloj');
-        this.resetearEstado();
-        this.limpiarTimers();
-        this.enfocarInputSiEsNecesario();
-    }
-
     // ========== MÉTODOS DE CONFIGURACIÓN CON PERSISTENCIA ==========
     private cargarConfiguracionDesdeStorage(): ConfiguracionSistema {
         try {
@@ -566,57 +817,13 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    toggleConfiguracion(): void {
-        this.mostrarConfigSignal.set(!this.mostrarConfigSignal());
-        this.codigoConfigSignal.set('');
-    }
-
-    agregarDigitoConfig(digito: number): void {
-        const valorActual = this.codigoConfigSignal();
-        if (valorActual.length < 4) {
-            this.codigoConfigSignal.set(valorActual + digito.toString());
-        }
-    }
-
-    borrarConfig(): void {
-        const valorActual = this.codigoConfigSignal();
-        if (valorActual.length > 0) {
-            this.codigoConfigSignal.set(valorActual.slice(0, -1));
-        }
-    }
-
-    aplicarConfiguracion(): void {
-        const codigo = this.codigoConfigSignal();
-        if (codigo === App.CODIGO_ADMIN) {
-            const configActual = this.configuracionSignal();
-            const nuevaConfig = {
-                ...configActual,
-                requiereCamara: !configActual.requiereCamara
-            };
-
-            this.configuracionSignal.set(nuevaConfig);
-            this.guardarConfiguracionEnStorage(nuevaConfig); // Guardar en localStorage
-
-            this.mostrarConfigSignal.set(false);
-            this.codigoConfigSignal.set('');
-
-            const mensaje = nuevaConfig.requiereCamara
-                ? 'Modo con cámara activado'
-                : 'Modo sin cámara activado';
-            this.mostrarMensajeExito(mensaje);
-        } else {
-            this.errorApiSignal.set('Código incorrecto');
-            setTimeout(() => this.errorApiSignal.set(null), 2000);
-        }
-    }
-
     // ========== PROCESAMIENTO SIN CÁMARA ==========
     private procesarSinCamara(): void {
         const empleado = this.empleadoSignal();
         const accion = this.accionActualSignal();
 
         if (!empleado || !accion) {
-            this.errorApiSignal.set("Error: Faltan datos para procesar la solicitud.");
+            this.errorApiSignal.set('Error: Faltan datos para procesar la solicitud.');
             return;
         }
 
@@ -626,24 +833,26 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         const { apiCall, successMessage } = this.obtenerConfiguracionAccionSinCamara();
         if (!apiCall) return;
 
-        apiCall.pipe(
-            timeout(App.TIMEOUT_MS),
-            takeUntil(this.destroy$),
-            finalize(() => this.isUploadingSignal.set(false)),
-            catchError((error: HttpErrorResponse) => {
-                console.error('Error en procesamiento:', error);
-                this.errorApiSignal.set(this.obtenerMensajeErrorProcesamiento(error));
-                return of(null);
-            })
-        ).subscribe(response => {
-            if (response?.success) {
-                this.mostrarMensajeExito(successMessage);
-            }
-        });
+        apiCall
+            .pipe(
+                timeout(App.TIMEOUT_MS),
+                takeUntil(this.destroy$),
+                finalize(() => this.isUploadingSignal.set(false)),
+                catchError((error: HttpErrorResponse) => {
+                    console.error('Error en procesamiento:', error);
+                    this.errorApiSignal.set(this.obtenerMensajeErrorProcesamiento(error));
+                    return of(null);
+                })
+            )
+            .subscribe((response) => {
+                if (response?.success) {
+                    this.mostrarMensajeExito(successMessage);
+                }
+            });
     }
 
     // Configuración de acciones sin cámara
-    private obtenerConfiguracionAccionSinCamara(): { apiCall: Observable<any> | null, successMessage: string } {
+    private obtenerConfiguracionAccionSinCamara(): { apiCall: Observable<any> | null; successMessage: string } {
         const empleado = this.empleadoSignal()!;
         const accion = this.accionActualSignal()!;
         const pausa = this.pausaActualSignal();
@@ -673,7 +882,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:
-                this.errorApiSignal.set("Acción no reconocida.");
+                this.errorApiSignal.set('Acción no reconocida.');
                 return { apiCall: null, successMessage: '' };
         }
     }
@@ -690,21 +899,22 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
             this.sincronizarConfiguracionSilenciosa();
         }
     }
-    
+
     private sincronizarConfiguracionSilenciosa(): void {
         const unidadId = this.configuracionSignal().unidadId;
         if (!unidadId) return;
-        
-        this.kioscoConfig.obtenerUnidadKiosco(unidadId)
+
+        this.kioscoConfig
+            .obtenerUnidadKiosco(unidadId)
             .pipe(
                 timeout(5000),
                 takeUntil(this.destroy$),
                 catchError(() => of(null))
             )
-            .subscribe(response => {
+            .subscribe((response) => {
                 if (response?.success && response.data) {
                     const unidadLocal = JSON.parse(localStorage.getItem('unidad_reloj') || '{}');
-                    
+
                     // Solo actualizar si la versión cambió
                     if (unidadLocal.versionKiosco !== response.data.versionKiosco) {
                         const nuevaConfig: ConfiguracionSistema = {
@@ -721,7 +931,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     private async cargarUnidades(): Promise<void> {
         this.isLoadingUnidadesSignal.set(true);
 
-        this.kioscoConfig.obtenerUnidadesKiosco()
+        this.kioscoConfig
+            .obtenerUnidadesKiosco()
             .pipe(
                 takeUntil(this.destroy$),
                 finalize(() => this.isLoadingUnidadesSignal.set(false))
@@ -740,220 +951,4 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
                 }
             });
     }
-
-    seleccionarUnidad(unidad: any): void {
-        this.unidadSeleccionadaSignal.set(unidad);
-    }
-
-    guardarUnidadSeleccionada(): void {
-        const unidad = this.unidadSeleccionadaSignal();
-        if (!unidad) return;
-
-        try {
-            // Guardar en localStorage
-            localStorage.setItem('unidad_reloj', JSON.stringify(unidad));
-
-            // Actualizar configuración
-            const nuevaConfig: ConfiguracionSistema = {
-                unidadId: unidad.id,
-                requiereCamara: unidad.requiereCamara ?? true
-            };
-
-            this.configuracionSignal.set(nuevaConfig);
-            this.mostrarModalUnidadSignal.set(false);
-            this.unidadSeleccionadaSignal.set(null);
-
-        } catch (error) {
-            console.error('Error al guardar unidad:', error);
-            this.errorApiSignal.set('Error al guardar la unidad seleccionada');
-        }
-    }
-
-    // ========== MODAL DE CONFIGURACIÓN ==========
-    abrirModalConfiguracion(): void {
-        this.mostrarModalConfiguracionSignal.set(true);
-    }
-
-    cerrarModalConfiguracion(): void {
-        this.mostrarModalConfiguracionSignal.set(false);
-        this.mostrarInputResetSignal.set(false);
-        this.codigoResetSignal.set('');
-    }
-
-    activarInputReset(): void {
-        this.mostrarInputResetSignal.set(true);
-        setTimeout(() => {
-            this.resetInput?.nativeElement.focus();
-        }, 100);
-    }
-
-    agregarDigitoReset(digito: number): void {
-        const valorActual = this.codigoResetSignal();
-        if (valorActual.length < 5) {
-            this.codigoResetSignal.set(valorActual + digito.toString());
-        }
-    }
-
-    borrarDigitoReset(): void {
-        const valorActual = this.codigoResetSignal();
-        if (valorActual.length > 0) {
-            this.codigoResetSignal.set(valorActual.slice(0, -1));
-        }
-    }
-
-    ejecutarReset(): void {
-        const codigo = this.codigoResetSignal();
-        const unidadId = this.configuracionSignal().unidadId;
-
-        if (codigo.length !== 5 || !unidadId) return;
-
-        this.isLoadingResetSignal.set(true);
-        this.errorApiSignal.set(null);
-
-        this.kioscoConfig.usarCodigoConfiguracion(unidadId, codigo)
-            .pipe(
-                timeout(5000),
-                takeUntil(this.destroy$),
-                finalize(() => this.isLoadingResetSignal.set(false))
-            )
-            .subscribe({
-                next: (response) => {
-                    if (response?.success) {
-                        localStorage.removeItem('unidad_reloj');
-                        location.reload();
-                    }
-                },
-                error: (error: HttpErrorResponse) => {
-                    this.errorApiSignal.set(error.status === 409 ? 'Código inválido' : 'Error de reset');
-                }
-            });
-    }
-
-    sincronizarConfiguracion(): void {
-        const unidadId = this.configuracionSignal().unidadId;
-        if (!unidadId) return;
-
-        this.isLoadingSignal.set(true);
-        this.errorApiSignal.set(null);
-
-        this.kioscoConfig.obtenerUnidadKiosco(unidadId)
-            .pipe(
-                timeout(5000),
-                takeUntil(this.destroy$),
-                finalize(() => this.isLoadingSignal.set(false))
-            )
-            .subscribe({
-                next: (response) => {
-                    if (response?.success && response.data) {
-                        const nuevaConfig: ConfiguracionSistema = {
-                            unidadId: response.data.id,
-                            requiereCamara: response.data.requiereCamara ?? true
-                        };
-                        this.configuracionSignal.set(nuevaConfig);
-                        localStorage.setItem('unidad_reloj', JSON.stringify(response.data));
-                        this.cerrarModalConfiguracion();
-                    }
-                },
-                error: () => this.errorApiSignal.set('Error al sincronizar')
-            });
-    }
-
-    // ========== MODAL SIN CÁMARA ==========
-    activarCodigoSinCamara(): void {
-        this.mostrarModalSinCamaraSignal.set(true);
-        this.codigoSinCamaraSignal.set('');
-        this.errorApiSignal.set(null);
-        setTimeout(() => {
-            this.sinCamaraInput?.nativeElement.focus();
-        }, 100);
-    }
-
-    cerrarModalSinCamara(): void {
-        this.mostrarModalSinCamaraSignal.set(false);
-        this.codigoSinCamaraSignal.set('');
-        this.errorApiSignal.set(null);
-    }
-
-    agregarDigitoSinCamara(digito: number): void {
-        const valorActual = this.codigoSinCamaraSignal();
-        if (valorActual.length < 5) {
-            this.codigoSinCamaraSignal.set(valorActual + digito.toString());
-        }
-    }
-
-    borrarDigitoSinCamara(): void {
-        const valorActual = this.codigoSinCamaraSignal();
-        if (valorActual.length > 0) {
-            this.codigoSinCamaraSignal.set(valorActual.slice(0, -1));
-        }
-    }
-
-    confirmarCodigoSinCamara(): void {
-        const codigo = this.codigoSinCamaraSignal();
-        const unidadId = this.configuracionSignal().unidadId;
-
-        if (codigo.length !== 5 || !unidadId) return;
-
-        this.isLoadingSinCamaraSignal.set(true);
-        this.errorApiSignal.set(null);
-
-        this.kioscoConfig.usarCodigoConfiguracion(unidadId, codigo)
-            .pipe(
-                takeUntil(this.destroy$),
-                finalize(() => this.isLoadingSinCamaraSignal.set(false))
-            )
-            .subscribe({
-                next: (response) => {
-                    if (response?.success) {
-                        const nuevaConfig: ConfiguracionSistema = {
-                            unidadId: unidadId,
-                            requiereCamara: false
-                        };
-                        this.configuracionSignal.set(nuevaConfig);
-                        
-                        // Actualizar localStorage manteniendo otros datos
-                        const unidadActual = JSON.parse(localStorage.getItem('unidad_reloj') || '{}');
-                        unidadActual.requiereCamara = false;
-                        localStorage.setItem('unidad_reloj', JSON.stringify(unidadActual));
-                        
-                        this.cerrarModalSinCamara();
-                        this.mostrarMensajeExito('Modo sin cámara activado');
-                    }
-                },
-                error: (error: HttpErrorResponse) => {
-                    this.errorApiSignal.set(error.status === 409 ? 'Código inválido' : 'Error al confirmar código');
-                }
-            });
-    }
-
-    private readonly solicitarCodigo$ = new Subject<void>();
-
-    solicitarCodigoConfiguracion(): void {
-        this.solicitarCodigo$.next();
-    }
-
-    private readonly solicitarCodigoConfiguracion$ = this.solicitarCodigo$.pipe(
-        switchMap(() => {
-            const unidadId = this.configuracionSignal().unidadId;
-            if (!unidadId) return of(null);
-            
-            this.isLoadingSignal.set(true);
-            this.errorApiSignal.set(null);
-            
-            return this.kioscoConfig.solicitarCodigo(unidadId).pipe(
-                timeout(5000),
-                catchError(() => {
-                    this.errorApiSignal.set('Error al solicitar código');
-                    return of(null);
-                }),
-                finalize(() => this.isLoadingSignal.set(false))
-            );
-        }),
-        takeUntil(this.destroy$)
-    ).subscribe(response => {
-        if (response?.success) {
-            this.mostrarMensajeExito('Código de configuración solicitado');
-            this.cerrarModalConfiguracion();
-        }
-    });
 }
