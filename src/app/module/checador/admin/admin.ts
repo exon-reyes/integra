@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
-import { DatePipe, NgOptimizedImage } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
 import { AsistenciaService, EmpleadoReporte, EmpleadoReporteRequest } from '@/core/services/asistencia/asistencia.service';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,8 @@ import { PuestoService } from '@/core/services/empresa/puesto.service';
 import { Puesto } from '@/models/empresa/puesto';
 import { InfoBasicaEmpleado } from '@/models/organizacion/empleado';
 import { fechaISOString, obtenerFinDia } from '@/shared/util/date.util';
+import { Zona } from '@/models/ubicacion/zona';
+import { ZonaService } from '@/core/services/ubicacion/zona.service';
 
 @Component({
     selector: 'app-admin',
@@ -31,15 +33,14 @@ export class Admin implements OnInit {
     mostrarModalFoto = false;
     empleados: EmpleadoReporte[] = [];
     expandedRows: { [key: string]: boolean } = {};
-    // Modal filtros
+    zonas = signal<Zona[]>([]);
+    supervisores = signal<InfoBasicaEmpleado[]>([]);
     mostrarModalFiltros = false;
     filtros = {
         fechaInicio: '',
         fechaFin: '',
         empleados: [] as number[]
     };
-    // Opciones para filtros
-    opcionesEmpleados: { label: string; value: number }[] = [];
     unidades = signal<Unidad[]>([]);
     puestos = signal<Puesto[]>([]);
     listaEmpleados = signal<InfoBasicaEmpleado[]>([]);
@@ -47,11 +48,17 @@ export class Admin implements OnInit {
     filtroUnidad: number;
     filtroPuesto: number;
     filtroEmpleado: number;
+    filtroSupervisor: number;
+    filtroZona: number;
     rangeDates: Date[] = [];
+
+    protected incidencias: any;
+    protected mostrarModalInconsistencias: boolean;
     private asistencias = inject(AsistenciaService);
     private empleadoService = inject(EmpleadoService);
     private unidadService = inject(UnidadService);
     private puestoService = inject(PuestoService);
+    private zonaService = inject(ZonaService);
 
     constructor() {}
 
@@ -88,17 +95,24 @@ export class Admin implements OnInit {
     }
 
     cargarAsistencias() {
-        const params: EmpleadoReporteRequest = {};
+        if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[1]) {
+            return;
+        }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        params.desde = fechaISOString(today);
-        params.hasta = fechaISOString(obtenerFinDia(today));
+        const params: EmpleadoReporteRequest = {};
+        const [desde, hasta] = this.rangeDates;
+        params.desde = fechaISOString(desde);
+        params.hasta = fechaISOString(obtenerFinDia(hasta));
 
         if (this.filtroUnidad) {
             params.unidadId = this.filtroUnidad;
         }
-
+        if (this.filtroSupervisor) {
+            params.supervisorId = this.filtroSupervisor;
+        }
+        if (this.filtroZona) {
+            params.zonaId = this.filtroZona;
+        }
         if (this.filtroPuesto) {
             params.puestoId = this.filtroPuesto;
         }
@@ -106,16 +120,12 @@ export class Admin implements OnInit {
         if (this.filtroEmpleado) {
             params.empleadoId = this.filtroEmpleado;
         }
+        // Verificar que exista al menos un filtro además del rango de fecha
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
 
-        if (this.rangeDates.length === 2) {
-            if (this.rangeDates[1] == null) {
-                return;
-            }
-            const [desde, hasta] = this.rangeDates;
-            params.desde = desde ? fechaISOString(desde) : null;
-            params.hasta = hasta ? fechaISOString(obtenerFinDia(hasta)) : null;
+        if (!tieneAlMenosUnFiltro) {
+            return;
         }
-        console.log(params);
         this.asistencias.obtenerAsistencias(params).subscribe({
             next: (value) => {
                 this.empleados = value.data.map((empleado) => ({
@@ -129,14 +139,15 @@ export class Admin implements OnInit {
             }
         });
     }
+
     cargarOpcionesFiltros() {
-        forkJoin([this.unidadService.obtenerUnidades(), this.puestoService.obtenerPuestos(), this.empleadoService.obtenerSoloEmpleados()]).subscribe({
-            next: ([unidadesResp, puestosResp, empleadosResp]) => {
+        forkJoin([this.unidadService.obtenerUnidades(), this.puestoService.obtenerPuestos(), this.empleadoService.obtenerSoloEmpleados(), this.zonaService.obtenerZonas(), this.empleadoService.obtenerSupervisores()]).subscribe({
+            next: ([unidadesResp, puestosResp, empleadosResp, zonaResp, superResp]) => {
                 this.unidades.set(unidadesResp.data.filter((unidad) => unidad.activo));
                 this.puestos.set(puestosResp.data);
                 this.listaEmpleados.set(empleadosResp.data.filter((empleado) => empleado.estatus !== 'B'));
-                // Cargar datos iniciales de hoy
-                this.cargarAsistencias();
+                this.zonas.set(zonaResp.data);
+                this.supervisores.set(superResp.data);
             }
         });
     }
@@ -265,5 +276,34 @@ export class Admin implements OnInit {
         }
 
         return inicio.getHours() >= 22 || inicio.getHours() <= 6;
+    }
+    mostrarInconsistencias(id: number) {
+        this.mostrarModalInconsistencias = true;
+        if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[0] || !this.rangeDates[1]) {
+            return;
+        }
+
+        const params: any = {
+            fechaInicio: fechaISOString(this.rangeDates[0]),
+            fechaFin: fechaISOString(obtenerFinDia(this.rangeDates[1])),
+            empleadoId: id
+        };
+
+        this.asistencias.obtenerInconsistencias(params).subscribe({
+            next: (response) => {
+                this.incidencias = response.data;
+            }
+        });
+    }
+
+    actulizarTabla() {
+        // Verificar que exista al menos un filtro además del rango de fecha
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
+
+        if (!tieneAlMenosUnFiltro) {
+            this.empleados = [];
+            return;
+        }
+        this.cargarAsistencias();
     }
 }

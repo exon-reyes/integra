@@ -31,6 +31,7 @@ export interface Asistencia {
     finJornada?: string;
     jornadaCerrada: boolean;
     cerradoAutomatico?: boolean;
+    tiempoCompensado?: string;
     pausas: Pausa[];
     diferencia8HorasTrabajadasFormateada: string;
     horasNetasTrabajadas: {
@@ -53,10 +54,10 @@ export interface EmpleadoReporteRequest {
     empleadoId?: number;
     desde?: string; // o Date, dependiendo de cómo manejes las fechas
     hasta?: string; // (si usas Date, convierte antes de enviar)
-    pagina?: number;
-    filas?: number;
     unidadId?: number;
+    zonaId?: number;
     supervisorId?: number;
+    diasTrabajados?: number;
     puestoId?: number;
 }
 @Injectable({
@@ -66,16 +67,21 @@ export class AsistenciaService {
     private http = inject(HttpClient);
     private readonly apiUrl = `${environment.integraApi}/asistencia/reporte`;
 
-    obtenerAsistencias(params) {
-        return this.http.get<ResponseData<EmpleadoReporte[]>>(`${this.apiUrl}/asistencias`, { params: params });
-    }
     get apiUrlImagen(): string {
         return this.apiUrl;
     }
+
+    obtenerAsistencias(params) {
+        return this.http.get<ResponseData<EmpleadoReporte[]>>(`${this.apiUrl}/asistencias`, { params: params });
+    }
+
     descargarExcel(params?: any) {
         return this.http.get(`${this.apiUrl}/asistencias/detallado/excel`, {
             responseType: 'blob',
             params: params
         });
+    }
+    obtenerInconsistencias(params?: any) {
+        return this.http.get<ResponseData<any>>(`${this.apiUrl}/inconsistencias`, { params: params });
     }
 }

@@ -8,7 +8,7 @@ import { Empleado } from '@/core/services/checador/Empleado';
 import { TipoPausa } from '@/core/services/checador/TipoPausa';
 import { KioscoConfigService } from '@/module/checador/service/kiosco-config-service';
 
-export type Accion = 'iniciarJornada' | 'finalizarJornada' | 'iniciarPausa' | 'finalizarPausa';
+export type Accion = 'iniciarJornada' | 'finalizarJornada' | 'finalizarJornadaDeposito' | 'iniciarPausa' | 'finalizarPausa';
 
 interface ApiErrorResponse {
     message?: string;
@@ -657,24 +657,29 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         switch (accion) {
             case 'iniciarJornada':
                 return {
-                    apiCall: this.checadorService.iniciarJornada(empleado.id, foto, unidadId),
+                    apiCall: this.checadorService.iniciarJornada(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
                     successMessage: '¡Jornada iniciada con éxito!'
                 };
             case 'finalizarJornada':
                 return {
-                    apiCall: this.checadorService.finalizarJornada(empleado.id, foto, unidadId),
+                    apiCall: this.checadorService.finalizarJornada(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada con éxito!'
+                };
+            case 'finalizarJornadaDeposito':
+                return {
+                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
+                    successMessage: '¡Jornada finalizada por depósito!'
                 };
             case 'iniciarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, foto, unidadId),
+                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, foto, unidadId,empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} iniciada!`
                 };
             case 'finalizarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, foto, unidadId),
+                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, foto, unidadId,empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:
@@ -861,24 +866,29 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         switch (accion) {
             case 'iniciarJornada':
                 return {
-                    apiCall: this.checadorService.iniciarJornada(empleado.id, null, unidadId),
+                    apiCall: this.checadorService.iniciarJornada(empleado.id, null, unidadId,empleado.unidadAsignadaId),
                     successMessage: '¡Jornada iniciada con éxito!'
                 };
             case 'finalizarJornada':
                 return {
-                    apiCall: this.checadorService.finalizarJornada(empleado.id, null, unidadId),
+                    apiCall: this.checadorService.finalizarJornada(empleado.id, null, unidadId,empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada con éxito!'
+                };
+            case 'finalizarJornadaDeposito':
+                return {
+                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, null, unidadId,empleado.unidadAsignadaId),
+                    successMessage: '¡Jornada finalizada por depósito!'
                 };
             case 'iniciarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, null, unidadId),
+                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, null, unidadId,empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} iniciada!`
                 };
             case 'finalizarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, null, unidadId),
+                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, null, unidadId,empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:

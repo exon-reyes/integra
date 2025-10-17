@@ -4,7 +4,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { of, tap } from 'rxjs';
 import { ResponseData } from '@/shared/util/responseData';
 import { InfoBasicaEmpleado } from '@/models/organizacion/empleado';
-import { Empleado } from '@/models/empleado/empleado';
 
 @Injectable({
     providedIn: 'root'
@@ -32,6 +31,9 @@ export class EmpleadoService {
         } else {
             return this.httpClient.get<ResponseData<InfoBasicaEmpleado[]>>(`${this.apiUrl}/nombres`, { headers: this.header }).pipe(tap((data) => (this.datSoloEmpleados = data)));
         }
+    }
+    obtenerSupervisores() {
+        return this.httpClient.get<ResponseData<InfoBasicaEmpleado[]>>(`${this.apiUrl}/supervisores-activos`, { headers: this.header });
     }
     removeCache() {
         this.data = undefined as any;

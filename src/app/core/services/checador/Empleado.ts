@@ -8,5 +8,6 @@ export interface Empleado {
   jornadaIniciada: boolean;
   esNocturno: boolean;
   tipoPausa: TipoPausa | null;
-  idUnidad?:number;
+  unidadAsignadaId?:number;
+  totalInconsistencias?:number;
 }

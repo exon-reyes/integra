@@ -22,6 +22,10 @@ import { Tooltip } from 'primeng/tooltip';
 export class AdminKiosco implements OnInit {
     kioscos = signal<Unidad[]>([]);
     loading = signal(false);
+    editandoCompensacion = signal<number | null>(null);
+    tiempoCompensacionTemp = signal<string>('');
+    horasTemp = signal<number>(0);
+    minutosTemp = signal<number>(0);
     // Total de kioscos
     totalKioscos = computed(() => this.kioscos().length);
     // Kioscos con cámara
@@ -38,6 +42,10 @@ export class AdminKiosco implements OnInit {
         if (total === 0) return 0;
         return Math.round((this.kioscosConCamara() / total) * 100);
     });
+    // Kioscos con tiempo de compensación
+    kioscosConCompensacion = computed(() => 
+        this.kioscos().filter(k => k.tiempoCompensacion && k.tiempoCompensacion !== '00:00:00').length
+    );
     private kioscoService = inject(KioscoConfigService);
     private readonly messageService = inject(MessageService);
 
@@ -126,6 +134,51 @@ export class AdminKiosco implements OnInit {
                     severity: 'error',
                     summary: 'Error',
                     detail: 'No se pudo rechazar la solicitud'
+                });
+            }
+        });
+    }
+
+    iniciarEdicionCompensacion(kiosco: Unidad) {
+        this.editandoCompensacion.set(kiosco.id);
+        const tiempo = kiosco.tiempoCompensacion || '00:00';
+        const [horas, minutos] = tiempo.split(':').map(Number);
+        this.horasTemp.set(horas);
+        this.minutosTemp.set(minutos);
+        this.tiempoCompensacionTemp.set(tiempo);
+    }
+
+    cancelarEdicionCompensacion() {
+        this.editandoCompensacion.set(null);
+        this.tiempoCompensacionTemp.set('');
+        this.horasTemp.set(0);
+        this.minutosTemp.set(0);
+    }
+
+    guardarCompensacion(kiosco: Unidad) {
+        const horas = this.horasTemp().toString().padStart(2, '0');
+        const minutos = this.minutosTemp().toString().padStart(2, '0');
+        const nuevoTiempo = `${horas}:${minutos}:00`;
+        
+        this.kioscoService.actualizarCompensacion(kiosco.id, nuevoTiempo).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.kioscos.update(kioscos => 
+                        kioscos.map(k => k.id === kiosco.id ? { ...k, tiempoCompensacion: nuevoTiempo } : k)
+                    );
+                    this.editandoCompensacion.set(null);
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Tiempo de compensación actualizado'
+                    });
+                }
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudo actualizar el tiempo de compensación'
                 });
             }
         });

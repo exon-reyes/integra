@@ -63,6 +63,7 @@
     <ng-template #header>
       <tr class="bg-gray-50">
         <th class="font-medium text-gray-700 py-3 px-4">Nombre</th>
+          <th class="font-medium text-gray-700 py-3 px-4">Supervisor</th>
         <th class="font-medium text-gray-700 py-3 px-4">Zona</th>
         <th class="font-medium text-gray-700 py-3 px-4">Estado</th>
         <th class="font-medium text-gray-700 py-3 px-4 w-32">Acciones</th>
@@ -71,6 +72,7 @@
     <ng-template #body let-unidad>
       <tr class="hover:bg-gray-50 transition-colors duration-150">
         <td class="py-3 px-4 font-medium text-gray-800">{{ unidad.clave }} {{ unidad.nombre }}</td>
+          <td>{{unidad.supervisor?.nombreCompleto}}</td>
         <td class="py-3 px-4 text-gray-600">{{ unidad.contacto?.zona?.nombre }}</td>
         <td class="py-3 px-4">
           <span class="inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium {{ unidad.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

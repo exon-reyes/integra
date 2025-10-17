@@ -72,10 +72,6 @@ export class UnidadService extends AbstractService {
         this.data = undefined;
         this.cacheTimestamp = undefined;
     }
-
-    obtenerUnidadesActivas() {
-        return this.http.get<ResponseData<Unidad[]>>(`${this.apiUrl}/unidades/activas`);
-    }
     private leerLocalStorage(): void {
         const data = localStorage.getItem('unidades');
         const timestamp = localStorage.getItem('unidades_timestamp');

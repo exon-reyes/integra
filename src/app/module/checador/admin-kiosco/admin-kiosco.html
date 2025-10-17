@@ -10,7 +10,7 @@
     </div>
 } @else {
     <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-4">
         <!-- Total Kioscos -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4">
             <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
@@ -47,6 +47,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- Con compensación -->
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center gap-4">
+            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                <i class="pi pi-clock text-purple-600 text-lg"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-purple-800">{{ kioscosConCompensacion() }}</div>
+                <div class="text-sm text-purple-600 font-medium">
+                    Con compensación
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Tabla de kioscos -->
@@ -77,13 +90,12 @@
                  [value]="kioscos()"
                  [paginator]="true"
                  [globalFilterFields]="['nombreCompleto']"
-                 [rows]="40"
+                 [rows]="50"
                  [scrollable]="true"
                  scrollHeight="calc(100vh - 331px)"
                  [showCurrentPageReport]="true"
                  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} kioscos"
-                 class="border-0"
-                 size="small">
+                 class="border-0">
 
             <ng-template pTemplate="header">
                 <tr class="bg-gray-50">
@@ -94,8 +106,9 @@
                     <th class="py-3 px-4 text-center" pSortableColumn="requiereCamara"> Requiere Cámara
                         <p-sortIcon field="requiereCamara"/>
                     </th>
-                    <th class="py-3 px-4 text-center">Solicitud config. manual</th>
-                    <th class="py-3 px-4 text-center">Código confirmación</th>
+                    <th>Solicitud config. manual</th>
+                    <th>Código confirmación</th>
+                    <th>Tiempo Comp. Depósito</th>
                 </tr>
             </ng-template>
 
@@ -144,6 +157,52 @@
                                 class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{{ kiosco.codigoAutorizacionKiosco }}</span>
                         } @else {
                             <span class="text-gray-400">-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (editandoCompensacion() === kiosco.id) {
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <input
+                                        type="number"
+                                        [(ngModel)]="horasTemp"
+                                        class="w-12 px-1 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                        min="0" max="23" placeholder="0">
+                                    <span class="text-xs text-gray-500">h</span>
+                                    <input
+                                        type="number"
+                                        [(ngModel)]="minutosTemp"
+                                        class="w-12 px-1 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                        min="0" max="59" placeholder="0">
+                                    <span class="text-xs text-gray-500">m</span>
+                                </div>
+                                <p-button
+                                    (onClick)="guardarCompensacion(kiosco)"
+                                    icon="pi pi-check"
+                                    severity="success"
+                                    size="small"
+                                    [text]="true">
+                                </p-button>
+                                <p-button
+                                    (onClick)="cancelarEdicionCompensacion()"
+                                    icon="pi pi-times"
+                                    severity="secondary"
+                                    size="small"
+                                    [text]="true">
+                                </p-button>
+                            </div>
+                        } @else {
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-sm">{{ kiosco.tiempoCompensacion || '00:00' }}</span>
+                                <p-button
+                                    (onClick)="iniciarEdicionCompensacion(kiosco)"
+                                    icon="pi pi-pencil"
+                                    severity="secondary"
+                                    size="small"
+                                    [text]="true"
+                                    pTooltip="Editar tiempo">
+                                </p-button>
+                            </div>
                         }
                     </td>
                 </tr>

@@ -35,4 +35,8 @@ export class KioscoConfigService extends AbstractService {
     usarCodigoConfiguracion(id: number, codigo: string) {
         return this.http.post<ResponseData<void>>(`${this.apiUrl}/${id}/codigos/${codigo}/usar`, {});
     }
+    actualizarCompensacion(id: number, compensacion: string) {
+        const params = new HttpParams().set('compensacion', compensacion);
+        return this.http.patch<ResponseData<void>>(`${this.apiUrl}/${id}/compensacion`, {}, { params });
+    }
 }

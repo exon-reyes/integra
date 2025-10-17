@@ -19,5 +19,6 @@ export interface Unidad {
     horarios?: HorarioOperativo[];
     requiereCodigo?: boolean;
     codigoAutorizacionKiosco?: string;
-    versionKiosco?:number;
+    versionKiosco?: number;
+    tiempoCompensacion?: string;
 }

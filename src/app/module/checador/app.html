@@ -168,6 +168,11 @@
                                 class="p-3 h-15 bg-blue-500 text-white font-semibold rounded-lg hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                             <i class="pi pi-sign-out mr-3"></i>Finalizar Jornada
                         </button>
+                        <button (click)="iniciarCapturaFoto('finalizarJornadaDeposito')"
+                                [disabled]="(!modoSinCamara() && !cameraPermissionGranted()) || isUploading() || isLoading()"
+                                class="p-3 h-15 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="pi pi-building mr-3"></i>Fin jornada por depósito
+                        </button>
                     }
                     @if (!cameraPermissionGranted() && !modoSinCamara()) {
                         <p class="text-red-500 text-sm font-medium">Se requieren permisos de cámara</p>

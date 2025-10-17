@@ -17,4 +17,5 @@ export class EmpleadoService {
             params: { idPuesto, estatus }
         });
     }
+
 }
