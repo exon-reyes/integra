@@ -1,39 +1,38 @@
+<app-title
+    imageSrc="assets/icon/companies.png"
+    title="Catálago de Unidades"
+    description="Administra la información básica de las unidades"/>
 <!-- Minimalist and modern unit management UI -->
-<div class="bg-white shadow-sm rounded-lg p-4 mb-4 border border-gray-100">
-
-    <h3><i style="font-size: 1.5rem" class="pi pi-building"></i> Administración de unidades</h3>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 mb-2">
     <div class="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
-      <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-        <i class="pi pi-check-circle text-green-600"></i>
-      </div>
-      <div>
-        <div class="text-xl font-bold text-green-800">{{ stats().activas }}</div>
-        <div class="text-sm text-green-600">Activas</div>
-      </div>
+        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-green-600"></i>
+        </div>
+        <div>
+            <div class="text-xl font-bold text-green-800">{{ stats().activas }}</div>
+            <div class="text-sm text-green-600">Activas</div>
+        </div>
     </div>
 
     <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
-      <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-        <i class="pi pi-times-circle text-red-600"></i>
-      </div>
-      <div>
-        <div class="text-xl font-bold text-red-800">{{ stats().inactivas }}</div>
-        <div class="text-sm text-red-600">Inactivas</div>
-      </div>
+        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-times-circle text-red-600"></i>
+        </div>
+        <div>
+            <div class="text-xl font-bold text-red-800">{{ stats().inactivas }}</div>
+            <div class="text-sm text-red-600">Inactivas</div>
+        </div>
     </div>
 
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-3 transition-colors duration-200">
-      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-        <i class="pi pi-building text-blue-600"></i>
-      </div>
-      <div>
-        <div class="text-xl font-bold text-blue-800">{{ stats().total }}</div>
-        <div class="text-sm text-blue-600">Total</div>
-      </div>
+        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-building text-blue-600"></i>
+        </div>
+        <div>
+            <div class="text-xl font-bold text-blue-800">{{ stats().total }}</div>
+            <div class="text-sm text-blue-600">Total</div>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="bg-white shadow-sm rounded-lg border border-gray-100">
@@ -58,7 +57,7 @@
   </div>
 
   <p-table #dt [value]="unidades()" [scrollable]="true" [globalFilterFields]="['nombre','clave']"
-           scrollHeight="calc(100vh - 350px)" [paginator]="true" [rows]="50"
+           scrollHeight="calc(100vh - 310px)" [paginator]="true" [rows]="50"
            class="border-0">
     <ng-template #header>
       <tr class="bg-gray-50">
@@ -71,7 +70,7 @@
     </ng-template>
     <ng-template #body let-unidad>
       <tr class="hover:bg-gray-50 transition-colors duration-150">
-        <td class="py-3 px-4 font-medium text-gray-800">{{ unidad.clave }} {{ unidad.nombre }}</td>
+        <td class="py-3 px-4 font-medium">{{ unidad.clave }} {{ unidad.nombre }}</td>
           <td>{{unidad.supervisor?.nombreCompleto}}</td>
         <td class="py-3 px-4 text-gray-600">{{ unidad.contacto?.zona?.nombre }}</td>
         <td class="py-3 px-4">

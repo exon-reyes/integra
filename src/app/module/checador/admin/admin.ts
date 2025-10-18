@@ -153,12 +153,37 @@ export class Admin implements OnInit {
     }
 
     descargarExcel() {
-        const params = {
-            fechaInicio: this.convertirFecha(this.filtros.fechaInicio),
-            fechaFin: this.convertirFecha(this.filtros.fechaFin),
-            empleados: this.filtros.empleados
-        };
+        if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[1]) {
+            return;
+        }
 
+        const params: EmpleadoReporteRequest = {};
+        const [desde, hasta] = this.rangeDates;
+        params.desde = fechaISOString(desde);
+        params.hasta = fechaISOString(obtenerFinDia(hasta));
+
+        if (this.filtroUnidad) {
+            params.unidadId = this.filtroUnidad;
+        }
+        if (this.filtroSupervisor) {
+            params.supervisorId = this.filtroSupervisor;
+        }
+        if (this.filtroZona) {
+            params.zonaId = this.filtroZona;
+        }
+        if (this.filtroPuesto) {
+            params.puestoId = this.filtroPuesto;
+        }
+
+        if (this.filtroEmpleado) {
+            params.empleadoId = this.filtroEmpleado;
+        }
+        // Verificar que exista al menos un filtro además del rango de fecha
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
+
+        if (!tieneAlMenosUnFiltro) {
+            return;
+        }
         this.asistencias.descargarExcel(params).subscribe({
             next: (blob) => {
                 const url = window.URL.createObjectURL(blob);
@@ -170,14 +195,7 @@ export class Admin implements OnInit {
                 this.mostrarModalFiltros = false;
             }
         });
-    }
-
-    convertirFecha(fecha: string): string | null {
-        if (!fecha || fecha.length !== 10) return null;
-        const [dia, mes, año] = fecha.split('/');
-        return `${año}-${mes}-${dia}`;
-    }
-
+    }Salv
     obtenerDuracionJornada(asistencia: any): number {
         if (!asistencia.jornadaCerrada) return 12; // Default para jornadas abiertas
         return asistencia.horasBrutasTrabajadas.horas + asistencia.horasBrutasTrabajadas.minutosRestantes / 60;

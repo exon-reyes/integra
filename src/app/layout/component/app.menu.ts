@@ -22,102 +22,54 @@ export class AppMenu implements OnInit {
 
     ngOnInit() {
         this.model = [
+            // --- GRUPO 1: Inicio (Renombrado de 'Home' a 'Panel Principal') ---
             {
-                label: 'Home',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+                label: 'Panel Principal', // Nombre del grupo cambiado
+                items: [{ label: 'Vista General', icon: 'pi pi-fw pi-home', routerLink: ['/'] }] // Nombre de la opción cambiado
             },
+            // --- GRUPO 2: Configuración (Renombrado de 'Generales' a 'Configuración') ---
             {
-                label: 'Módulo',
+                label: 'Generales', // Nombre del grupo cambiado
                 items: [
                     {
-                        label: 'Admin. de unidades',
-                        icon: 'isc isc-company',
+                        label: 'Administración de unidades', // Nombre de la opción cambiado
                         routerLink: ['/sucursal']
-                    },
-                    {
-                        label: 'Empleados',
-                        icon: 'pi pi-fw pi-users',
-                        routerLink: ['/empleado/admin']
-                    },
-                    {
-                        label: 'Credenciales',
-                        icon: 'pi pi-fw pi-key',
-                        routerLink: ['/credenciales/admin']
                     }
                 ]
             },
+            // --- GRUPO 3: Capital Humano (Renombrado de 'GESTIÓN DE RRHH' a 'Capital Humano') ---
             {
-                label: 'Asistencia',
+                label: 'CAPITAL HUMANO', // Nombre del grupo cambiado
                 items: [
                     {
-                        label: 'Checador',
-                        icon: 'pi pi-fw pi-clock',
-                        routerLink: ['/checador']
+                        label: 'Talento y Personal', // Nombre de la subopción cambiado
+                        items: [
+                            {
+                                label: 'Empleados', // Nombre de la opción de nivel más bajo cambiado
+                                icon: 'pi pi-fw pi-users',
+                                routerLink: ['/empleado/admin']
+                            }
+                        ]
                     },
                     {
-                        label: 'Asistencia',
-                        icon: 'pi pi-fw pi-users',
-                        routerLink: ['/asistencia/admin']
-                    },
-                    { label: 'Kiosco', icon: 'pi pi-fw pi-desktop', routerLink: ['/asistencia/kioscos'] }
+                        label: 'Control de Horarios', // Nombre de la subopción cambiado
+                        items: [
+                            { label: 'Informe de asistencia', icon: 'pi pi-fw pi-list', routerLink: ['/asistencia/admin'] }, // Nombre cambiado
+                            { label: 'Config. OpenTime', icon: 'pi pi-fw pi-camera', routerLink: ['/asistencia/kioscos'] }, // Nombre cambiado
+                            { label: 'Compensaciones', icon: 'pi pi-fw pi-calendar-plus', routerLink: ['/asistencia/compensacion'] },
+                            { label: 'Reloj Checador', icon: 'pi pi-fw pi-clock', routerLink: ['/checador'] } // Nombre cambiado
+                        ]
+                    }
+                ]
+            },
+            // --- GRUPO 4: Infraestructura TI (Renombrado de 'Sistemas TI' a 'Infraestructura TI') ---
+            {
+                label: 'INFRAESTRUCTURA TI', // Nombre del grupo cambiado
+                items: [
+                    { label: 'Gestión de Credenciales', routerLink: ['/credenciales/admin'] },
+                    { label: 'Roles de operación', routerLink: ['/roles/admin'] }
                 ]
             }
-            //     {
-            //     label: 'Generales', items: [{
-            //         label: 'Observaciones',
-            //         icon: 'pi pi-fw pi-id-card',
-            //         items: [{
-            //             label: 'Asignaciones', icon: 'pi pi-fw pi-list', routerLink: ['/colabora/observaciones']
-            //         }, {
-            //             label: 'Nueva Observación', icon: 'pi pi-fw pi-plus', routerLink: ['/colabora/observaciones/add']
-            //         }, {label: 'Colaboración', icon: 'pi pi-objects-column', routerLink: ['/colabora']}],
-            //         routerLink: ['/colabora/observaciones']
-            //     }, {
-            //         label: 'OpenBuilder', icon: 'isc isc-registry', routerLink: ['reporte/ticket/add']
-            //     },
-            //
-            //     ]
-            // }, {
-            //     label: 'Auditoría', items: [{label: 'Observaciones', icon: 'isc isc-report'}]
-            // }, {
-            //     label: 'Mantenimiento', items: [{
-            //         label: 'Panel', icon: 'pi pi-fw pi-cog', routerLink: ['/mantenimiento/panel']
-            //     }]
-            // }, {
-            //     label: 'Sistemas', items: [{
-            //         label: 'Credenciales', icon: 'pi pi-fw pi-desktop', routerLink: ['/sistemas/cuenta-prov']
-            //     }]
-            // }
-            // {
-            //     label: 'Integra',
-            //     items: [
-            //         {
-            //             label: 'Auditorías',
-            //             icon: 'pi pi-fw pi-clipboard',
-            //             items: [
-            //                 {
-            //                     label: 'Panel de Reportes',
-            //                     icon: 'pi pi-fw pi-list',
-            //                 },
-            //                 {
-            //                     label: 'Nueva Auditoría',
-            //                     icon: 'pi pi-fw pi-plus',
-            //                     routerLink: ['/auditoria/crear']
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             label: 'Sistemas IT',
-            //
-            //             icon: 'pi pi-fw pi-desktop'
-            //         },
-            //
-            //         {
-            //             label: 'Configuración',
-            //             icon: 'pi pi-fw pi-cog'
-            //         }
-            //     ]
-            // }
         ];
     }
 }

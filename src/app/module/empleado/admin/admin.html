@@ -1,42 +1,37 @@
+<app-title
+    imageSrc="assets/icon/users.svg"
+    title="Catálago de Colaboradores"
+    description="Consulta la información básica de los colaboradores"/>
 <!-- Minimalist and modern employee management UI -->
-<div class="bg-white shadow-sm rounded-lg p-4 mb-4 border border-gray-100">
-    <div class="flex items-center gap-3 mb-4">
+<div class="mt-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div
+        class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+            <i class="pi pi-users text-blue-600 text-lg"></i>
+        </div>
         <div>
-            <div class="text-2xl font-bold"><i class="pi pi-users mr-2" style="font-size: 1.5rem"></i>Administración de Empleados</div>
-            <div class="text-lg text-gray-500 ">Consulta y gestión de información básica de empleados</div>
+            <div class="text-2xl font-bold text-blue-800">{{ numEmpleadosActivos }}</div>
+            <div class="text-sm text-blue-600 font-medium">Empleados activos</div>
         </div>
     </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div
-            class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
-            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                <i class="pi pi-users text-blue-600 text-lg"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-blue-800">{{ numEmpleadosActivos }}</div>
-                <div class="text-sm text-blue-600 font-medium">Empleados activos</div>
-            </div>
+    <div
+        class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+            <i class="pi pi-users text-indigo-600 text-lg"></i>
         </div>
-        <div
-            class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
-            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                <i class="pi pi-users text-indigo-600 text-lg"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-indigo-800">{{ numEmpleadosReingreso }}</div>
-                <div class="text-sm text-indigo-600 font-medium">Empleados reingresados</div>
-            </div>
+        <div>
+            <div class="text-2xl font-bold text-indigo-800">{{ numEmpleadosReingreso }}</div>
+            <div class="text-sm text-indigo-600 font-medium">Empleados reingresados</div>
         </div>
-        <div
-            class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
-            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                <i class="pi pi-users text-red-600 text-lg"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-red-800">{{ numEmpleadosInactivos }}</div>
-                <div class="text-sm text-red-600 font-medium">Bajas de empleados</div>
-            </div>
+    </div>
+    <div
+        class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
+            <i class="pi pi-users text-red-600 text-lg"></i>
+        </div>
+        <div>
+            <div class="text-2xl font-bold text-red-800">{{ numEmpleadosInactivos }}</div>
+            <div class="text-sm text-red-600 font-medium">Bajas de empleados</div>
         </div>
     </div>
 </div>
@@ -102,7 +97,7 @@
              [rowsPerPageOptions]="[200,400,500,1000]"
              [value]="empleados()"
              class="border-0"
-             scrollHeight="calc(100vh - 467px)"
+             scrollHeight="calc(100vh - 428px)"
              size="small">
         <ng-template #header>
             <tr class="bg-gray-50">

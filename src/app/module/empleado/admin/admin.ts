@@ -11,10 +11,11 @@ import {FormsModule} from "@angular/forms";
 import {MultiSelectModule} from 'primeng/multiselect';
 import {Panel} from "primeng/panel";
 import {ExcelGeneratorService} from '@/shared/service/excel-generator.service';
+import {TitleComponent} from "@/shared/component/title/title.component";
 
 @Component({
     selector: 'app-admin',
-    imports: [CommonModule, TableModule, IconField, InputIcon, InputText, Button, FormsModule, MultiSelectModule, Panel],
+    imports: [CommonModule, TableModule, IconField, InputIcon, InputText, Button, FormsModule, MultiSelectModule, Panel, TitleComponent],
     templateUrl: './admin.html',
     styleUrl: './admin.scss'
 })
@@ -26,25 +27,30 @@ export class Admin implements OnInit {
     selectedUnidad: string[] = [];
     selectedPuesto: string[] = [];
     selectedEstatus: string[] = [];
-    unidades: { name: string, code: string }[] = [];
-    puestos: { name: string, code: string }[] = [];
-    estatusOptions: { name: string, code: string }[] = [{name: 'Activo', code: 'A'}, {
-        name: 'Reingreso', code: 'R'
-    }, {name: 'Baja', code: 'B'}];
+    unidades: { name: string; code: string }[] = [];
+    puestos: { name: string; code: string }[] = [];
+    estatusOptions: { name: string; code: string }[] = [
+        { name: 'Activo', code: 'A' },
+        {
+            name: 'Reingreso',
+            code: 'R'
+        },
+        { name: 'Baja', code: 'B' }
+    ];
 
     private empleadoService = inject(EmpleadoService);
     private excelGeneratorService = inject(ExcelGeneratorService);
 
     get numEmpleadosActivos() {
-        return this.empleados().filter(z => z.estatus === 'A').length;
+        return this.empleados().filter((z) => z.estatus === 'A').length;
     }
 
     get numEmpleadosInactivos() {
-        return this.empleados().filter(z => z.estatus === 'B').length;
+        return this.empleados().filter((z) => z.estatus === 'B').length;
     }
 
     get numEmpleadosReingreso() {
-        return this.empleados().filter(z => z.estatus === 'R').length;
+        return this.empleados().filter((z) => z.estatus === 'R').length;
     }
 
     ngOnInit() {
@@ -59,36 +65,40 @@ export class Admin implements OnInit {
                 this.extractUnidadesFromData(this.empleados());
                 this.extractPuestosFromData(this.empleados());
                 this.extractEstatusFromData(this.empleados());
-            }, error: () => this.loading.set(false)
+            },
+            error: () => this.loading.set(false)
         });
     }
 
     extractUnidadesFromData(data: InfoBasicaEmpleado[]) {
-        const unidadesUnicas = [...new Set(data.map(emp => emp.unidadNombreCompleto))];
+        const unidadesUnicas = [...new Set(data.map((emp) => emp.unidadNombreCompleto))];
         this.unidades = unidadesUnicas
-            .filter(u => u) // Filtrar valores null/undefined
-            .map(unidad => ({
-                name: unidad, code: unidad
+            .filter((u) => u) // Filtrar valores null/undefined
+            .map((unidad) => ({
+                name: unidad,
+                code: unidad
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     extractPuestosFromData(data: InfoBasicaEmpleado[]) {
-        const puestosUnicos = [...new Set(data.map(emp => emp.puestoNombre))];
+        const puestosUnicos = [...new Set(data.map((emp) => emp.puestoNombre))];
         this.puestos = puestosUnicos
-            .filter(p => p) // Filtrar valores null/undefined
-            .map(puesto => ({
-                name: puesto, code: puesto
+            .filter((p) => p) // Filtrar valores null/undefined
+            .map((puesto) => ({
+                name: puesto,
+                code: puesto
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     extractEstatusFromData(data: InfoBasicaEmpleado[]) {
-        const estatusUnicos = [...new Set(data.map(emp => emp.estatus))];
+        const estatusUnicos = [...new Set(data.map((emp) => emp.estatus))];
         this.estatusOptions = estatusUnicos
-            .filter(e => e)
-            .map(estatus => ({
-                name: estatus === 'A' ? 'Activo' : estatus === 'R' ? 'Reingreso' : 'Baja', code: estatus
+            .filter((e) => e)
+            .map((estatus) => ({
+                name: estatus === 'A' ? 'Activo' : estatus === 'R' ? 'Reingreso' : 'Baja',
+                code: estatus
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
     }

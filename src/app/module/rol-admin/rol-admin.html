@@ -1,0 +1,56 @@
+<app-title
+    imageSrc="assets/icon/conftime.svg"
+    title="Roles de operación"
+    description="Catálago de roles del sistema"/>
+
+@if (loading()) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+        <span class="ml-3 text-gray-600">Cargando roles...</span>
+    </div>
+} @else {
+    <div class="bg-white shadow-sm rounded-lg border border-gray-100 my-3">
+        <div class="p-4 border-b border-gray-100">
+            <p-iconfield>
+                <p-inputicon class="pi pi-search"/>
+                <input (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                       class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                       pInputText
+                       placeholder="Buscar rol..."/>
+            </p-iconfield>
+        </div>
+
+        <p-table #dt
+                 [value]="roles()"
+                 [paginator]="true"
+                 [globalFilterFields]="['nombre', 'descripcion']"
+                 [rows]="20"
+                 [scrollable]="true"
+                 scrollHeight="calc(100vh - 280px)"
+                 [showCurrentPageReport]="true"
+                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} roles"
+                 class="border-0"
+                 size="small">
+
+            <ng-template pTemplate="header">
+                <tr class="bg-gray-50">
+                    <th class="py-3 px-4">#</th>
+                    <th class="py-3 px-4" pSortableColumn="nombre">Nombre
+                        <p-sortIcon field="nombre"/>
+                    </th>
+                    <th class="py-3 px-4" pSortableColumn="descripcion">Descripción
+                        <p-sortIcon field="descripcion"/>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template let-rol pTemplate="body" let-rowIndex="rowIndex">
+                <tr class="text-sm hover:bg-gray-50 transition-colors">
+                    <td>{{ rowIndex + 1 }}</td>
+                    <td class="font-medium">{{ rol.nombre }}</td>
+                    <td class="text-gray-600">{{ rol.descripcion || '-' }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+}

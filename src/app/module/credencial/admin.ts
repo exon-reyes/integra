@@ -26,13 +26,35 @@ import {DepartamentoService} from "@/core/services/empresa/departamento.service"
 import {Unidad} from "@/models/empresa/unidad";
 import {Departamento} from "@/models/empresa/departamento";
 import {TiposCuenta} from './tipos-cuenta';
+import {TitleComponent} from "@/shared/component/title/title.component";
 
 // Interfaces importadas del servicio
 
 @Component({
     selector: 'app-admin',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule, InputTextModule, IconFieldModule, InputIconModule, MultiSelectModule, PanelModule, DialogModule, PasswordModule, ToastModule, MenuModule, Select, Textarea, Tooltip, ConfirmDialogModule, TiposCuenta],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        TableModule,
+        ButtonModule,
+        InputTextModule,
+        IconFieldModule,
+        InputIconModule,
+        MultiSelectModule,
+        PanelModule,
+        DialogModule,
+        PasswordModule,
+        ToastModule,
+        MenuModule,
+        Select,
+        Textarea,
+        Tooltip,
+        ConfirmDialogModule,
+        TiposCuenta,
+        TitleComponent
+    ],
     templateUrl: './admin.html',
     styleUrl: './admin.scss',
     providers: [MessageService, ConfirmationService]
@@ -66,13 +88,21 @@ export class Admin implements OnInit {
     unidadService = inject(UnidadService);
     departamentoService = inject(DepartamentoService);
 
-    constructor(private fb: FormBuilder, private messageService: MessageService, private credencialService: CredencialService, private excelGeneratorService: ExcelGeneratorService, private authService: AuthService, private router: Router, private confirmationService: ConfirmationService) {
+    constructor(
+        private fb: FormBuilder,
+        private messageService: MessageService,
+        private credencialService: CredencialService,
+        private excelGeneratorService: ExcelGeneratorService,
+        private authService: AuthService,
+        private router: Router,
+        private confirmationService: ConfirmationService
+    ) {
         this.credencialForm = this.fb.group({
             usuario: ['', Validators.required],
             clave: [''],
             idTipoCuenta: [null, Validators.required],
-            unidadId: [null,Validators.required],
-            departamentoId: [null,Validators.required],
+            unidadId: [null, Validators.required],
+            departamentoId: [null, Validators.required],
             nota: ['']
         });
     }
@@ -88,15 +118,27 @@ export class Admin implements OnInit {
     initializeMenu() {
         if (!this.selectedCredencial) return;
 
-        this.menuItems = [{
-            label: 'Editar', icon: 'pi pi-pencil', command: () => this.editarCredencial()
-        }, {
-            label: 'Copiar contraseña', icon: 'pi pi-copy', command: () => this.copiarClave()
-        }, {
-            separator: true
-        }, {
-            label: 'Eliminar', icon: 'pi pi-trash', styleClass: 'text-red-600', command: () => this.eliminarCredencial()
-        }];
+        this.menuItems = [
+            {
+                label: 'Editar',
+                icon: 'pi pi-pencil',
+                command: () => this.editarCredencial()
+            },
+            {
+                label: 'Copiar contraseña',
+                icon: 'pi pi-copy',
+                command: () => this.copiarClave()
+            },
+            {
+                separator: true
+            },
+            {
+                label: 'Eliminar',
+                icon: 'pi pi-trash',
+                styleClass: 'text-red-600',
+                command: () => this.eliminarCredencial()
+            }
+        ];
     }
 
     loadCredenciales() {
@@ -104,19 +146,25 @@ export class Admin implements OnInit {
             next: (response) => {
                 if (response.success) {
                     // Agregar propiedad mostrarClave a cada credencial
-                    const credencialesConVisibilidad = response.data.map(cred => ({
-                        ...cred, mostrarClave: false
+                    const credencialesConVisibilidad = response.data.map((cred) => ({
+                        ...cred,
+                        mostrarClave: false
                     }));
                     this.credenciales.set(credencialesConVisibilidad);
                 } else {
                     this.messageService.add({
-                        severity: 'error', summary: 'Error', detail: 'Error al cargar credenciales'
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error al cargar credenciales'
                     });
                 }
-            }, error: (error) => {
+            },
+            error: (error) => {
                 console.error('Error loading credentials:', error);
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Error al conectar con el servidor'
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al conectar con el servidor'
                 });
             }
         });
@@ -140,7 +188,9 @@ export class Admin implements OnInit {
         if (this.selectedCredencial) {
             navigator.clipboard.writeText(this.selectedCredencial.clave).then(() => {
                 this.messageService.add({
-                    severity: 'success', summary: 'Copiado', detail: 'Contraseña copiada al portapapeles'
+                    severity: 'success',
+                    summary: 'Copiado',
+                    detail: 'Contraseña copiada al portapapeles'
                 });
             });
         }
@@ -148,9 +198,14 @@ export class Admin implements OnInit {
 
     toggleVerClaveDirecto(credencial: CredencialDto) {
         // Actualizar el estado de mostrarClave para la credencial específica desde el botón directo
-        const credencialesActualizadas = this.credenciales().map(cred => cred.id === credencial.id ? {
-            ...cred, mostrarClave: !cred.mostrarClave
-        } : cred);
+        const credencialesActualizadas = this.credenciales().map((cred) =>
+            cred.id === credencial.id
+                ? {
+                      ...cred,
+                      mostrarClave: !cred.mostrarClave
+                  }
+                : cred
+        );
         this.credenciales.set(credencialesActualizadas);
     }
 
@@ -173,14 +228,18 @@ export class Admin implements OnInit {
                         next: (response) => {
                             if (response.success) {
                                 this.messageService.add({
-                                    severity: 'success', summary: 'Éxito', detail: 'Credencial eliminada correctamente'
+                                    severity: 'success',
+                                    summary: 'Éxito',
+                                    detail: 'Credencial eliminada correctamente'
                                 });
                                 this.loadCredenciales();
                             }
                         },
                         error: (error) => {
                             this.messageService.add({
-                                severity: 'error', summary: 'Error', detail: 'Error al eliminar la credencial'
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'Error al eliminar la credencial'
                             });
                         }
                     });
@@ -226,9 +285,7 @@ export class Admin implements OnInit {
                 nota: formValue.nota || ''
             };
 
-            const operation = this.editingCredencial ?
-                this.credencialService.actualizarCredencial(this.editingCredencial.id, credencialData) :
-                this.credencialService.crearCredencial(credencialData);
+            const operation = this.editingCredencial ? this.credencialService.actualizarCredencial(this.editingCredencial.id, credencialData) : this.credencialService.crearCredencial(credencialData);
 
             operation.subscribe({
                 next: (response) => {
@@ -248,52 +305,60 @@ export class Admin implements OnInit {
                             detail: response.message || 'Error al guardar la credencial'
                         });
                     }
-                }, error: (error) => {
+                },
+                error: (error) => {
                     this.loading = false;
                     console.error('Error saving credential:', error);
                     this.messageService.add({
-                        severity: 'error', summary: 'Error', detail: 'Error al conectar con el servidor'
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Error al conectar con el servidor'
                     });
                 }
             });
         } else {
             this.markFormGroupTouched();
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Por favor complete todos los campos requeridos'
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Por favor complete todos los campos requeridos'
             });
         }
     }
 
     exportarExcel() {
         const datosAExportar = this.dt.filteredValue || this.credenciales();
-        this.excelGeneratorService.generarExcelCredenciales(datosAExportar).then(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Exportación exitosa',
-                detail: `Se exportaron ${datosAExportar.length} credenciales a Excel`
+        this.excelGeneratorService
+            .generarExcelCredenciales(datosAExportar)
+            .then(() => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Exportación exitosa',
+                    detail: `Se exportaron ${datosAExportar.length} credenciales a Excel`
+                });
+            })
+            .catch((error) => {
+                console.error('Error exportando a Excel:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error en exportación',
+                    detail: 'Ocurrió un error al exportar los datos a Excel'
+                });
             });
-        }).catch(error => {
-            console.error('Error exportando a Excel:', error);
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error en exportación',
-                detail: 'Ocurrió un error al exportar los datos a Excel'
-            });
-        });
     }
 
     private cargarTiposCuenta() {
         this.credencialService.obtenerTipoCuentas().subscribe({
             next: (response) => {
-                this.tiposCuenta.set(response.data)
+                this.tiposCuenta.set(response.data);
             }
-        })
+        });
     }
 
     private cargarUnidades() {
         this.unidadService.obtenerUnidades().subscribe({
             next: (response) => {
-                const unidadesActivas = response.data.filter(unidad => unidad.activo === true);
+                const unidadesActivas = response.data.filter((unidad) => unidad.activo === true);
                 this.unidades.set(unidadesActivas);
             }
         });
@@ -308,7 +373,7 @@ export class Admin implements OnInit {
     }
 
     private markFormGroupTouched() {
-        Object.keys(this.credencialForm.controls).forEach(key => {
+        Object.keys(this.credencialForm.controls).forEach((key) => {
             const control = this.credencialForm.get(key);
             control?.markAsTouched();
         });

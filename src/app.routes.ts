@@ -33,6 +33,12 @@ export const appRoutes: Routes = [
                 data: { permission: 'ADMIN' }
             },
             {
+                path: 'asistencia/compensacion',
+                loadComponent: () => import('@/module/checador/compensaciones/compensaciones').then((value) => value.Compensaciones),
+                canActivate: [RolePermissionGuard],
+                data: { permission: 'ADMIN' }
+            },
+            {
                 path: 'asistencia/kioscos',
                 loadComponent: () => import('@/module/checador/admin-kiosco/admin-kiosco').then((value) => value.AdminKiosco),
                 canActivate: [RolePermissionGuard],
@@ -50,6 +56,8 @@ export const appRoutes: Routes = [
                 canActivate: [RolePermissionGuard],
                 data: { permission: 'ADMIN' }
             },
+            { path: 'roles/admin', loadComponent: () => import('@/module/rol-admin/rol-admin').then((value) => value.RolAdmin), canActivate: [RolePermissionGuard], data: { permission: 'ADMIN' } },
+
             { path: 'sistemas', children: SistemasRoutes },
             {
                 path: 'usuarios',

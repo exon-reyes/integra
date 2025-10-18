@@ -25,10 +25,30 @@ import {normalizeProperties} from "@/shared/util/object.util";
 import {forkJoin} from 'rxjs';
 import {Textarea} from "primeng/textarea";
 import {Zonas} from "@/module/zonas/zonas";
+import {TitleComponent} from "@/shared/component/title/title.component";
 
 @Component({
     selector: 'app-sucursal',
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule, DialogModule, Button, TableModule, ContactoComponent, SpinnerComponent, OperatividadComponent, IconField, InputIcon, InputText, Select, Textarea, Zonas],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        ToastModule,
+        ConfirmDialogModule,
+        DialogModule,
+        Button,
+        TableModule,
+        ContactoComponent,
+        SpinnerComponent,
+        OperatividadComponent,
+        IconField,
+        InputIcon,
+        InputText,
+        Select,
+        Textarea,
+        Zonas,
+        TitleComponent
+    ],
     templateUrl: './unidades.html',
     providers: [MessageService, ConfirmationService]
 })
@@ -47,8 +67,8 @@ export class Unidades implements OnInit {
     searchValue = '';
     stats = computed(() => {
         const unidades = this.unidades();
-        const activas = unidades.filter(u => u.activo).length;
-        return {activas, inactivas: unidades.length - activas, total: unidades.length};
+        const activas = unidades.filter((u) => u.activo).length;
+        return { activas, inactivas: unidades.length - activas, total: unidades.length };
     });
     private zonaService = inject(ZonaService);
     private estadoService = inject(EstadoService);
@@ -75,7 +95,7 @@ export class Unidades implements OnInit {
 
     openCreateDialog() {
         this.isEditMode.set(false);
-        this.form.reset({activo: true});
+        this.form.reset({ activo: true });
         this.displayDialog = true;
     }
 
@@ -102,7 +122,9 @@ export class Unidades implements OnInit {
     saveUnidad() {
         if (this.form.invalid) {
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Complete todos los campos requeridos'
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Complete todos los campos requeridos'
             });
             return;
         }
@@ -122,7 +144,8 @@ export class Unidades implements OnInit {
                 this.displayDialog = false;
                 this.loadData();
                 this.saving.set(false);
-            }, error: () => this.saving.set(false)
+            },
+            error: () => this.saving.set(false)
         });
     }
 
@@ -175,7 +198,9 @@ export class Unidades implements OnInit {
                     next: () => {
                         this.unidadService.removeCache();
                         this.messageService.add({
-                            severity: 'success', summary: 'Éxito', detail: 'Unidad eliminada correctamente'
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Unidad eliminada correctamente'
                         });
                         this.loadData();
                     }
@@ -195,7 +220,8 @@ export class Unidades implements OnInit {
                 a.click();
                 window.URL.revokeObjectURL(url);
                 this.exporting.set(false);
-            }, error: () => this.exporting.set(false)
+            },
+            error: () => this.exporting.set(false)
         });
     }
 
@@ -206,12 +232,13 @@ export class Unidades implements OnInit {
             estados: this.estadoService.obtenerEstados(),
             zonas: this.zonaService.obtenerZonas()
         }).subscribe({
-            next: ({unidades, estados, zonas}) => {
+            next: ({ unidades, estados, zonas }) => {
                 this.unidades.set(unidades.data);
                 this.estados.set(estados.data);
                 this.zonas.set(zonas.data);
                 this.loading.set(false);
-            }, error: () => this.loading.set(false)
+            },
+            error: () => this.loading.set(false)
         });
     }
 }

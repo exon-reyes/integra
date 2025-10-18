@@ -1,0 +1,143 @@
+<app-title
+    imageSrc="assets/icon/compensa.svg"
+    title="Compensación de Jornadas"
+    description="Tiempo aplicado como ajuste final a la jornada del empleado."
+/>
+
+<!-- Panel de filtros -->
+<p-panel header="Opciones de consulta" [collapsed]="false" [toggleable]="true" class="my-3 border-0">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+        <!-- Rango de fechas -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">* Rango de fechas</label>
+            <p-datePicker [iconDisplay]="'input'" fluid="true" [showIcon]="true" [readonlyInput]="true"
+                          [showClear]="true" [(ngModel)]="rangeDates" selectionMode="range"
+                          placeholder="Seleccionar rango" (onSelect)="cargarCompensacion()">
+            </p-datePicker>
+        </div>
+
+        <!-- Empleado -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Empleado</label>
+            <p-select class="w-full" [filter]="true" [showClear]="true" [virtualScroll]="true"
+                      [virtualScrollItemSize]="38" [(ngModel)]="filtroEmpleado" [options]="listaEmpleados()"
+                      optionLabel="nombreCompleto" optionValue="id"
+                      filterBy="codigoEmpleado,nombreCompleto" placeholder="Todos los empleados"
+                      (onChange)="cargarCompensacion()">
+                <ng-template #item let-empleado>
+                    {{ empleado.codigoEmpleado }} {{ empleado.nombreCompleto }}
+                </ng-template>
+            </p-select>
+        </div>
+
+        <!-- Unidad -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Unidad</label>
+            <p-select class="w-full" [filter]="true" [showClear]="true"
+                      [(ngModel)]="filtroUnidad" [options]="unidades()"
+                      optionLabel="nombre" optionValue="id"
+                      filterBy="clave,nombre" placeholder="Todas las unidades"
+                      (onChange)="cargarCompensacion()">
+                <ng-template #item let-data>
+                    {{ data.clave }} {{ data.nombre }}
+                </ng-template>
+            </p-select>
+        </div>
+
+        <!-- Zona -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Zona</label>
+            <p-select class="w-full" [filter]="true" [showClear]="true"
+                      [(ngModel)]="filtroZona" [options]="zonas()"
+                      optionLabel="nombre" optionValue="id"
+                      placeholder="Seleccionar" (onChange)="cargarCompensacion()">
+            </p-select>
+        </div>
+
+        <!-- Supervisor -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Supervisor</label>
+            <p-select class="w-full" [filter]="true" [showClear]="true"
+                      [(ngModel)]="filtroSupervisor" [options]="supervisores()"
+                      optionLabel="nombreCompleto" optionValue="id"
+                      placeholder="Seleccionar" (onChange)="cargarCompensacion()">
+            </p-select>
+        </div>
+
+    </div>
+</p-panel>
+
+
+<!-- Tabla optimizada -->
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+        <div class="flex gap-2 justify-between">
+            <p-iconfield>
+                <p-inputicon class="pi pi-search"/>
+                <input (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                       class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                       pInputText
+                       placeholder="Buscar en resultados..."/>
+            </p-iconfield>
+            <div class="flex gap-2 items-center">
+                <p-button
+                    (onClick)="descargarExcel()"
+                    icon="pi pi-file-excel"
+                    label="Exportar"
+                    severity="success"
+                    size="small"
+                    [loading]="loadingExcel()">
+                </p-button>
+
+                <p-button
+                    (onClick)="cargarCompensacion()"
+                    icon="pi pi-refresh"
+                    label="Actualizar"
+                    severity="info"
+                    size="small"
+                    [loading]="loading()">
+                </p-button>
+            </div>
+
+        </div>
+    </div>
+    <p-table #dt [value]="compensaciones()" [loading]="loading()" [paginator]="true" [rows]="15"
+             [showCurrentPageReport]="true"
+             currentPageReportTemplate="{first} - {last} de {totalRecords}">
+
+        <ng-template pTemplate="header">
+            <tr class="bg-gray-50">
+                <th class="font-semibold">Colaborador</th>
+                <th class="font-semibold">Unidad</th>
+                <th class="font-semibold">Fecha</th>
+                <th class="font-semibold">H. Salida</th>
+                <th class="font-semibold">H. Trabajadas</th>
+                <th class="font-semibold">H. Faltante</th>
+                <th class="font-semibold">Compensado</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-compensacion>
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="font-medium text-gray-900">{{ compensacion.clave }} {{ compensacion.colaborador }}</td>
+                <td class="text-gray-600">{{ compensacion.unidad }}</td>
+                <td class="text-gray-600">{{ compensacion.fecha | date:'dd/MM/yyyy' }}</td>
+                <td class="text-gray-600">{{ compensacion.horaSalida }}</td>
+                <td class="text-gray-600">{{ compensacion.horasTrabajadas }}</td>
+                <td class="text-orange-600 font-medium">{{ compensacion.horasFaltantes }}</td>
+                <td class="text-green-600 font-medium">{{ compensacion.tiempoCompensado }}</td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center text-gray-400 py-8">
+                    <i class="pi pi-inbox text-3xl mb-2"></i>
+                    <p>No se encontraron compensaciones</p>
+                </td>
+            </tr>
+        </ng-template>
+
+    </p-table>
+</div>
