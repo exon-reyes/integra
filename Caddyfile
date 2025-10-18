@@ -27,7 +27,32 @@ sci.ddns.me:4200 {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
     }
 
-    # Archivos estáticos con cache largo
+    # ⚠️ IMPORTANTE: Proxy al backend ANTES de archivos estáticos
+    @api path /comialex/api/*
+    handle @api {
+        reverse_proxy localhost:8081 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            transport http {
+                dial_timeout 30s
+                response_header_timeout 600s
+            }
+        }
+    }
+
+    # Uploads
+    handle /uploads/* {
+        root * C:\caddy\sci\uploads
+        file_server browse
+
+        # Bloqueo de archivos peligrosos
+        @dangerous path *.php *.jsp *.cgi *.asp *.aspx
+        respond @dangerous 403
+    }
+
+    # Archivos estáticos con cache largo (DESPUÉS del proxy API)
     @static path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
     handle @static {
         header Cache-Control "public, max-age=31536000, immutable"
@@ -42,31 +67,6 @@ sci.ddns.me:4200 {
         header Pragma "no-cache"
         header Expires "0"
         file_server
-    }
-
-    # Uploads
-    handle /uploads/* {
-        root * C:\caddy\sci\uploads
-        file_server browse
-
-        # Bloqueo de archivos peligrosos
-        @dangerous path *.php *.jsp *.cgi *.asp *.aspx
-        respond @dangerous 403
-    }
-
-    # Proxy al backend Spring Boot (manteniendo ruta completa)
-    @api path /comialex/api/*
-    handle @api {
-        reverse_proxy localhost:8081 {
-            header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            transport http {
-                dial_timeout 30s
-                response_header_timeout 600s
-            }
-        }
     }
 
     # SPA Angular routing
