@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, HostBinding, Input, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subscription } from 'rxjs';
@@ -7,19 +7,31 @@ import { CommonModule } from '@angular/common';
 import { RippleModule } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from '../service/layout.service';
+import { HasPermissionDirective } from '@/shared/directive/has-permission.directive'; // Importación necesaria
+
+// Definición de la interfaz CustomMenuItem para el tipo correcto
+export interface CustomMenuItem extends MenuItem {
+    permission?: string;
+    items?: CustomMenuItem[];
+}
 
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
     selector: '[app-menuitem]',
-    imports: [CommonModule, RouterModule, RippleModule],
+    standalone: true, // Asegurando que es standalone
+    imports: [CommonModule, RouterModule, RippleModule, HasPermissionDirective], // 💡 Agregando HasPermissionDirective aquí
     template: `
         <ng-container>
             <div *ngIf="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
+
+            <!-- 1. Enlace sin routerLink o con sub-items (ej. Título de sección) -->
             <a *ngIf="(!item.routerLink || item.items) && item.visible !== false" [attr.href]="item.url" (click)="itemClick($event)" [ngClass]="item.styleClass" [attr.target]="item.target" tabindex="0" pRipple>
                 <i [ngClass]="item.icon" class="layout-menuitem-icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
+
+            <!-- 2. Enlace final con routerLink y sin sub-items -->
             <a
                 *ngIf="item.routerLink && !item.items && item.visible !== false"
                 (click)="itemClick($event)"
@@ -43,9 +55,14 @@ import { LayoutService } from '../service/layout.service';
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
 
+            <!-- 🎯 3. Bucle Recursivo para Sub-menús (AQUÍ ESTÁ EL CAMBIO CRÍTICO) -->
             <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation">
                 <ng-template ngFor let-child let-i="index" [ngForOf]="item.items">
-                    <li app-menuitem [item]="child" [index]="i" [parentKey]="key" [class]="child['badgeClass']"></li>
+                    <!-- 💡 ENVOLVEMOS CADA ELEMENTO HIJO CON LA DIRECTIVA *hasPermission -->
+                    <ng-container *hasPermission="child.permission">
+                        <!-- El li app-menuitem se crea solo si el permiso existe -->
+                        <li app-menuitem [item]="child" [index]="i" [parentKey]="key" [class]="child['badgeClass']"></li>
+                    </ng-container>
                 </ng-template>
             </ul>
         </ng-container>
@@ -69,8 +86,8 @@ import { LayoutService } from '../service/layout.service';
     ],
     providers: [LayoutService]
 })
-export class AppMenuitem {
-    @Input() item!: MenuItem;
+export class AppMenuitem implements OnInit, OnDestroy {
+    @Input() item!: CustomMenuItem; // 💡 Usando la interfaz CustomMenuItem
 
     @Input() index!: number;
 
@@ -106,11 +123,20 @@ export class AppMenuitem {
             this.active = false;
         });
 
-        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((params) => {
+        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
             if (this.item.routerLink) {
                 this.updateActiveStateFromRoute();
             }
         });
+    }
+
+    get submenuAnimation() {
+        return this.root ? 'expanded' : this.active ? 'expanded' : 'collapsed';
+    }
+
+    @HostBinding('class.active-menuitem')
+    get activeClass() {
+        return this.active && !this.root;
     }
 
     ngOnInit() {
@@ -122,6 +148,8 @@ export class AppMenuitem {
     }
 
     updateActiveStateFromRoute() {
+        if (!this.item.routerLink) return; // Añadir chequeo de seguridad
+
         let activeRoute = this.router.isActive(this.item.routerLink[0], { paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' });
 
         if (activeRoute) {
@@ -147,15 +175,6 @@ export class AppMenuitem {
         }
 
         this.layoutService.onMenuStateChange({ key: this.key });
-    }
-
-    get submenuAnimation() {
-        return this.root ? 'expanded' : this.active ? 'expanded' : 'collapsed';
-    }
-
-    @HostBinding('class.active-menuitem')
-    get activeClass() {
-        return this.active && !this.root;
     }
 
     ngOnDestroy() {

@@ -1,0 +1,16 @@
+:host {
+    display: block;
+}
+
+.isc,
+.i-role,
+.i-contact {
+    display: block !important; // Cambia de inline-block a block
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    font-size: 0; // Elimina espacios en blanco
+    line-height: 0; // Elimina altura de línea
+}

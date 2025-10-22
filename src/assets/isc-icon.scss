@@ -1,19 +1,42 @@
 .isc {
     display: inline-block;
-    width: 1.3rem;   /* tamaño default */
+    width: 1.3rem; /* tamaño default */
     height: 1.3rem;
+    padding: 0.5rem;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
 }
 
-.isc-registry {
-    background-image: url('/assets/icon/isc/registry.svg');
+.i-role {
+    background-image: url('/assets/icon/securityshield.svg');
 }
-.isc-report {
-    background-image: url('/assets/icon/isc/audit-report.svg');
+.i-keypass{
+    background-image: url('/assets/icon/keypass.svg');
 }
-.isc-company {
-    background-image: url('/assets/icon/isc/company.svg');
+.i-exchange{
+    background-image: url('/assets/icon/exchange.svg');
 }
 
+.i-reloj{
+    background-image: url('/assets/icon/reloj.svg');
+}
+.i-contact {
+    background-image: url('/assets/icon/contactus.svg');
+}
+.i-member {
+    background-image: url('/assets/icon/member.svg');
+}
+.i-contact{
+    background-image: url('/assets/icon/contact.svg');
+}
+.i-schedule {
+    background-image: url('/assets/icon/schedule.svg');
+}
+
+.i-timelimit {
+    background-image: url('/assets/icon/timelimit.svg');
+}
+.i-expired{
+    background-image: url('/assets/icon/expired.svg');
+}

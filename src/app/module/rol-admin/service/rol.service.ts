@@ -20,4 +20,10 @@ export class RolService {
     obtenerRoles(): Observable<ResponseData<Rol[]>> {
         return this.http.get<ResponseData<Rol[]>>(`${this.apiUrl}/roles`);
     }
+    obtenerTodosLosPermisos(): Observable<ResponseData<any>> {
+        return this.http.get<ResponseData<any>>(`${this.apiUrl}/permisos`);
+    }
+    obtenerPermisosPorRol(rolId: number): Observable<ResponseData<any>> {
+        return this.http.get<ResponseData<any>>(`${this.apiUrl}/permisos/rol/${rolId}`);
+    }
 }

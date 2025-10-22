@@ -3,71 +3,59 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
-
+import { HasPermissionDirective } from '@/shared/directive/has-permission.directive';
+// 💡 CustomMenuItem now includes the 'permission' property
+export interface CustomMenuItem extends MenuItem {
+    permission?: string;
+    items?: CustomMenuItem[];
+}
 @Component({
     selector: 'app-menu',
     standalone: true,
-    imports: [CommonModule, AppMenuitem, RouterModule],
+    imports: [CommonModule, AppMenuitem, RouterModule, HasPermissionDirective],
     template: `
         <ul class="layout-menu">
             <ng-container *ngFor="let item of model; let i = index">
-                <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
+                <ng-container *ngIf="!item.separator">
+                    <ng-container *hasPermission="item.permission">
+                        <li app-menuitem [item]="item" [index]="i" [root]="true"></li>
+                    </ng-container>
+                </ng-container>
+
                 <li *ngIf="item.separator" class="menu-separator"></li>
             </ng-container>
         </ul>
     `
 })
 export class AppMenu implements OnInit {
-    model: MenuItem[] = [];
-
+    model: CustomMenuItem[] = [];
     ngOnInit() {
         this.model = [
-            // --- GRUPO 1: Inicio (Renombrado de 'Home' a 'Panel Principal') ---
             {
-                label: 'Panel Principal', // Nombre del grupo cambiado
-                items: [{ label: 'Vista General', icon: 'pi pi-fw pi-home', routerLink: ['/'] }] // Nombre de la opción cambiado
+                label: 'Panel Principal',
+                items: [{ label: 'Vista General', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             },
-            // --- GRUPO 2: Configuración (Renombrado de 'Generales' a 'Configuración') ---
+
             {
-                label: 'Generales', // Nombre del grupo cambiado
+                label: 'Generales',
+                items: [{ label: 'Unidades', routerLink: ['/sucursal'],icon:'isc i-contact' }]
+            },
+            {
+                label: 'GESTIÓN RRHH',
+                icon: 'isc i-member',
                 items: [
-                    {
-                        label: 'Administración de unidades', // Nombre de la opción cambiado
-                        routerLink: ['/sucursal']
-                    }
+                    { label: 'Empleados', icon:'isc i-member', routerLink: ['/empleado/admin'] },
+                    { label: 'Informe de asistencia', icon: 'isc i-schedule', routerLink: ['/asistencia/admin'] },
+                    { label: 'Config. OpenTime', icon: 'isc i-timelimit', routerLink: ['/asistencia/kioscos'] },
+                    { label: 'Compensaciones', icon: 'isc i-expired', routerLink: ['/asistencia/compensacion'] },
+                    { label: 'Reloj Checador', icon: 'isc i-reloj', routerLink: ['/checador'] }
                 ]
             },
-            // --- GRUPO 3: Capital Humano (Renombrado de 'GESTIÓN DE RRHH' a 'Capital Humano') ---
             {
-                label: 'CAPITAL HUMANO', // Nombre del grupo cambiado
+                label: 'INFRAESTRUCTURA TI',
                 items: [
-                    {
-                        label: 'Talento y Personal', // Nombre de la subopción cambiado
-                        items: [
-                            {
-                                label: 'Empleados', // Nombre de la opción de nivel más bajo cambiado
-                                icon: 'pi pi-fw pi-users',
-                                routerLink: ['/empleado/admin']
-                            }
-                        ]
-                    },
-                    {
-                        label: 'Control de Horarios', // Nombre de la subopción cambiado
-                        items: [
-                            { label: 'Informe de asistencia', icon: 'pi pi-fw pi-list', routerLink: ['/asistencia/admin'] }, // Nombre cambiado
-                            { label: 'Config. OpenTime', icon: 'pi pi-fw pi-camera', routerLink: ['/asistencia/kioscos'] }, // Nombre cambiado
-                            { label: 'Compensaciones', icon: 'pi pi-fw pi-calendar-plus', routerLink: ['/asistencia/compensacion'] },
-                            { label: 'Reloj Checador', icon: 'pi pi-fw pi-clock', routerLink: ['/checador'] } // Nombre cambiado
-                        ]
-                    }
-                ]
-            },
-            // --- GRUPO 4: Infraestructura TI (Renombrado de 'Sistemas TI' a 'Infraestructura TI') ---
-            {
-                label: 'INFRAESTRUCTURA TI', // Nombre del grupo cambiado
-                items: [
-                    { label: 'Gestión de Credenciales', routerLink: ['/credenciales/admin'] },
-                    { label: 'Roles de operación', routerLink: ['/roles/admin'] }
+                    { label: 'Gestión de Credenciales', routerLink: ['/credenciales/admin'] ,icon:'isc i-keypass'},
+                    { label: 'Gestión de Roles', routerLink: ['/roles/admin'],icon: 'isc i-exchange' }
                 ]
             }
         ];

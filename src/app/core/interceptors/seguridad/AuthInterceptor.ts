@@ -37,7 +37,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
                 });
                 return next(authReq);
             }),
-            catchError(err => {
+            catchError((err) => {
                 authService.logout();
                 return throwError(() => err);
             })
@@ -65,7 +65,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
                         });
                         return next(retryReq);
                     }),
-                    catchError(err => {
+                    catchError((err) => {
                         authService.logout();
                         return throwError(() => err);
                     })

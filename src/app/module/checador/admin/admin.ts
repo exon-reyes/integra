@@ -282,19 +282,6 @@ export class Admin implements OnInit {
             };
         }
     }
-
-    esJornadaNocturna(asistencia: any): boolean {
-        if (!asistencia.inicioJornada) return false;
-
-        const inicio = new Date(asistencia.inicioJornada);
-
-        if (asistencia.jornadaCerrada && asistencia.finJornada) {
-            const fin = new Date(asistencia.finJornada);
-            return fin.getDate() !== inicio.getDate() || fin.getMonth() !== inicio.getMonth() || fin.getFullYear() !== inicio.getFullYear();
-        }
-
-        return inicio.getHours() >= 22 || inicio.getHours() <= 6;
-    }
     mostrarInconsistencias(id: number) {
         this.mostrarModalInconsistencias = true;
         if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[0] || !this.rangeDates[1]) {
