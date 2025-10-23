@@ -34,6 +34,7 @@ export interface Asistencia {
     tiempoCompensado?: string;
     pausas: Pausa[];
     diferencia8HorasTrabajadasFormateada: string;
+    fueAsistenciaNocturna?: boolean;
     horasNetasTrabajadas: {
         minutos: number;
         horas: number;

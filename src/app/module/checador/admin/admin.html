@@ -244,46 +244,59 @@
                                                 }
                                             </div>
                                         </div>
-                                        <div class="mb-4 relative" style="height: 40px;">
-                                            <div
-                                                class="absolute top-4 left-0 right-0 h-2 bg-gray-200 rounded-full"></div>
-
-                                            <div
-                                                class="absolute top-4 left-0 right-0 h-2 bg-blue-500 rounded-full"
-                                                [class.bg-red-500]="asistencia.cerradoAutomatico"></div>
-
-                                            @for (pausa of asistencia.pausas; track pausa.id) {
+                                        <div class="mb-4">
+                                            @if (asistencia.fueAsistenciaNocturna) {
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <i class="pi pi-moon text-yellow-500"></i>
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-800 text-white">
+                                                        Jornada Nocturna
+                                                    </span>
+                                                </div>
+                                            }
+                                            
+                                            <div class="relative" [style.height]="asistencia.fueAsistenciaNocturna ? '30px' : '40px'">
                                                 <div
-                                                    [pTooltip]="'Pausa ' + pausa.tipoPausa + ': ' + (pausa.duracion?.horas || 0) + 'h ' + (pausa.duracion?.minutosRestantes || 0) + 'm'"
-                                                    tooltipPosition="bottom"
-                                                    [style.left.%]="calcularPosicionPausa(asistencia, pausa)"
-                                                    [style.width.%]="calcularAnchoPausa(asistencia, pausa)"
-                                                    class="absolute top-3 h-4 bg-red-400 rounded-sm border-2 border-white">
-                                                    <div
-                                                        class="absolute -top-6 left-0 text-xs text-red-600 font-medium whitespace-nowrap">
-                                                        {{ pausa.inicio | date:'HH:mm' }}
-                                                    </div>
-                                                    <div
-                                                        class="absolute -top-6 right-0 text-xs text-red-600 font-medium whitespace-nowrap">
-                                                        {{ pausa.fin | date:'HH:mm' }}
-                                                    </div>
-                                                    @if (!pausa.fin && !asistencia.jornadaCerrada) {
-                                                        <div
-                                                            class="absolute -bottom-8 left-0 text-xs text-orange-600 font-medium whitespace-nowrap">
-                                                            En curso
-                                                        </div>
-                                                    }
-                                                </div>
-                                            }
+                                                    class="absolute top-3 left-0 right-0 h-2 bg-gray-200 rounded-full"></div>
 
-                                            <div class="absolute -top-2 text-xs text-blue-600 font-medium left-0">
-                                                {{ asistencia.inicioJornada | date:'HH:mm' }}
-                                            </div>
-                                            @if (asistencia.jornadaCerrada) {
-                                                <div class="absolute -top-2 text-xs text-blue-600 font-medium right-0">
-                                                    {{ asistencia.finJornada | date:'HH:mm' }}
+                                                <div
+                                                    class="absolute top-3 left-0 right-0 h-2 bg-blue-500 rounded-full"
+                                                    [class.bg-red-500]="asistencia.cerradoAutomatico"></div>
+
+                                                @for (pausa of asistencia.pausas; track pausa.id) {
+                                                    <div
+                                                        [pTooltip]="'Pausa ' + pausa.tipoPausa + ': ' + (pausa.duracion?.horas || 0) + 'h ' + (pausa.duracion?.minutosRestantes || 0) + 'm'"
+                                                        tooltipPosition="bottom"
+                                                        [style.left.%]="calcularPosicionPausa(asistencia, pausa)"
+                                                        [style.width.%]="calcularAnchoPausa(asistencia, pausa)"
+                                                        class="absolute top-2 h-4 bg-red-400 rounded-sm border-2 border-white">
+                                                        @if (!asistencia.fueAsistenciaNocturna) {
+                                                            <div
+                                                                class="absolute -top-6 left-0 text-xs text-red-600 font-medium whitespace-nowrap">
+                                                                {{ pausa.inicio | date:'HH:mm' }}
+                                                            </div>
+                                                            <div
+                                                                class="absolute -top-6 right-0 text-xs text-red-600 font-medium whitespace-nowrap">
+                                                                {{ pausa.fin | date:'HH:mm' }}
+                                                            </div>
+                                                        }
+                                                        @if (!pausa.fin && !asistencia.jornadaCerrada) {
+                                                            <div
+                                                                class="absolute -bottom-6 left-0 text-xs text-orange-600 font-medium whitespace-nowrap">
+                                                                En curso
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+
+                                                <div class="absolute -top-2 text-xs text-blue-600 font-medium left-0">
+                                                    {{ asistencia.inicioJornada | date: asistencia.fueAsistenciaNocturna ? 'dd/MM HH:mm' : 'HH:mm' }}
                                                 </div>
-                                            }
+                                                @if (asistencia.jornadaCerrada) {
+                                                    <div class="absolute -top-2 text-xs text-blue-600 font-medium right-0">
+                                                        {{ asistencia.finJornada | date: asistencia.fueAsistenciaNocturna ? 'dd/MM HH:mm' : 'HH:mm' }}
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
 
                                         <div

@@ -197,8 +197,7 @@ export class Admin implements OnInit {
         });
     }Salv
     obtenerDuracionJornada(asistencia: any): number {
-        if (!asistencia.jornadaCerrada) return 12; // Default para jornadas abiertas
-        return asistencia.horasBrutasTrabajadas.horas + asistencia.horasBrutasTrabajadas.minutosRestantes / 60;
+        return 8; // Duración fija de 8 horas para diseño uniforme
     }
 
     calcularPosicionPausa(asistencia: any, pausa: any): number {
@@ -206,14 +205,14 @@ export class Admin implements OnInit {
         const inicioPausa = new Date(pausa.inicio);
         const tiempoTranscurrido = (inicioPausa.getTime() - inicioJornada.getTime()) / (1000 * 60 * 60);
         const duracionTotal = this.obtenerDuracionJornada(asistencia);
-        return (tiempoTranscurrido / Math.ceil(duracionTotal)) * 100;
+        return Math.min(95, (tiempoTranscurrido / duracionTotal) * 100);
     }
 
     calcularAnchoPausa(asistencia: any, pausa: any): number {
-        if (!pausa.fin) return 1;
+        if (!pausa.fin) return 2;
         const duracionPausa = pausa.duracion.horas + pausa.duracion.minutosRestantes / 60;
         const duracionTotal = this.obtenerDuracionJornada(asistencia);
-        return Math.max(1, (duracionPausa / Math.ceil(duracionTotal)) * 100);
+        return Math.max(2, Math.min(10, (duracionPausa / duracionTotal) * 100));
     }
 
     calcularTiempoEnMomento(asistencia: any): string {
