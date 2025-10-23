@@ -10,6 +10,12 @@ export interface Rol {
     descripcion?: string;
 }
 
+export interface PermisoApi {
+    id: number;
+    name: string;
+    description: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -23,7 +29,7 @@ export class RolService {
     obtenerTodosLosPermisos(): Observable<ResponseData<any>> {
         return this.http.get<ResponseData<any>>(`${this.apiUrl}/permisos`);
     }
-    obtenerPermisosPorRol(rolId: number): Observable<ResponseData<any>> {
-        return this.http.get<ResponseData<any>>(`${this.apiUrl}/permisos/rol/${rolId}`);
+    obtenerPermisosPorRol(id: number): Observable<ResponseData<PermisoApi[]>> {
+        return this.http.get<ResponseData<PermisoApi[]>>(`${this.apiUrl}/permisos/rol/${id}`);
     }
 }

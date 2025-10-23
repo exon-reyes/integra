@@ -47,10 +47,24 @@ export class RolAdmin implements OnInit {
     modulos = signal<Modulo[]>([]);
 
     Math = Math;
-
-    // Estructura base: Módulo → Submódulo → Permisos
-    // Estructura base: Módulo → Submódulo → Permisos
     modulosBase: Modulo[] = [
+        {
+            id: 28,
+            nombre: 'Generales',
+            submodulos: [
+                {
+                    id: 29,
+                    nombre: 'Generales',
+                    permisos: [
+                        {
+                            id: 28,
+                            nombre: 'Consultar generales de unidad',
+                            asignado: false
+                        }
+                    ]
+                }
+            ]
+        },
         {
             id: 1,
             nombre: 'Gestión RRHH',
@@ -59,41 +73,40 @@ export class RolAdmin implements OnInit {
                     id: 2,
                     nombre: 'Empleados',
                     permisos: [
-                        { id: 3, nombre: 'Consultar empleados', asignado: false },
-                        { id: 4, nombre: 'Crear empleados', asignado: false },
-                        { id: 5, nombre: 'Editar empleados', asignado: false },
-                        { id: 6, nombre: 'Exportar empleados', asignado: false },
-                        { id: 7, nombre: 'Visualizar indicadores', asignado: false }
+                        { id: 1, nombre: 'Consultar empleados', asignado: false },
+                        { id: 2, nombre: 'Crear empleados', asignado: false },
+                        { id: 3, nombre: 'Editar empleados', asignado: false },
+                        { id: 4, nombre: 'Exportar empleados', asignado: false },
+                        { id: 5, nombre: 'Visualizar indicadores', asignado: false }
                     ]
                 },
                 {
                     id: 8,
                     nombre: 'Asistencia',
                     permisos: [
-                        { id: 9, nombre: 'Consultar asistencia', asignado: false },
-                        { id: 10, nombre: 'Restringir consulta a supervisor', asignado: false },
-                        { id: 11, nombre: 'Exportar asistencia', asignado: false },
-                        { id: 12, nombre: 'Agregar registro', asignado: false },
-                        { id: 13, nombre: 'Editar registro', asignado: false }
+                        { id: 6, nombre: 'Consultar asistencia', asignado: false },
+                        { id: 7, nombre: 'Restringir consulta a supervisor', asignado: false },
+                        { id: 8, nombre: 'Exportar asistencia', asignado: false },
+                        { id: 9, nombre: 'Agregar registro', asignado: false },
+                        { id: 10, nombre: 'Editar registro', asignado: false }
                     ]
                 },
                 {
                     id: 14,
                     nombre: 'Configuración OpenTime',
                     permisos: [
-                        { id: 15, nombre: 'Consultar unidades', asignado: false },
-                        { id: 16, nombre: 'Editar tiempo de compensación', asignado: false },
-                        { id: 17, nombre: 'Autorizar configuraciones', asignado: false },
-                        { id: 18, nombre: 'Editar uso de camara', asignado: false }
+                        { id: 11, nombre: 'Consultar indicadores', asignado: false },
+                        { id: 12, nombre: 'Editar tiempo de compensación', asignado: false },
+                        { id: 13, nombre: 'Autorizar configuraciones', asignado: false },
+                        { id: 14, nombre: 'Editar uso de camara', asignado: false }
                     ]
                 },
                 {
                     id: 19,
                     nombre: 'Compensaciones asignadas',
                     permisos: [
-                        { id: 20, nombre: 'Consultar compensaciones', asignado: false },
-                        { id: 21, nombre: 'Restringir consulta a supervisor', asignado: false },
-                        { id: 22, nombre: 'Exportar compensaciones', asignado: false }
+                        { id: 15, nombre: 'Consultar compensaciones', asignado: false },
+                        { id: 16, nombre: 'Exportar compensaciones', asignado: false }
                     ]
                 }
             ]
@@ -105,20 +118,24 @@ export class RolAdmin implements OnInit {
                 {
                     id: 24,
                     nombre: 'Servidor',
-                    permisos: [{ id: 25, nombre: 'Monitoreo de caché', asignado: false }]
+                    permisos: [
+                        { id: 17, nombre: 'Monitoreo de caché', asignado: false }
+                    ]
                 },
                 {
                     id: 26,
                     nombre: 'Redes',
-                    permisos: [{ id: 27, nombre: 'Gestionar redes', asignado: false }]
+                    permisos: [
+                        { id: 18, nombre: 'Gestionar redes', asignado: false }
+                    ]
                 },
                 {
-                    id: 28,
+                    id: 27,
                     nombre: 'Soporte Técnico',
                     permisos: [
-                        { id: 29, nombre: 'Crear tickets', asignado: false },
-                        { id: 30, nombre: 'Resolver tickets', asignado: false },
-                        { id: 31, nombre: 'Ver historial', asignado: false }
+                        { id: 19, nombre: 'Crear tickets', asignado: false },
+                        { id: 20, nombre: 'Resolver tickets', asignado: false },
+                        { id: 21, nombre: 'Ver historial', asignado: false }
                     ]
                 }
             ]
@@ -131,18 +148,18 @@ export class RolAdmin implements OnInit {
                     id: 33,
                     nombre: 'Usuarios',
                     permisos: [
-                        { id: 34, nombre: 'Crear usuarios', asignado: false },
-                        { id: 35, nombre: 'Editar usuarios', asignado: false },
-                        { id: 36, nombre: 'Desactivar usuarios', asignado: false },
-                        { id: 37, nombre: 'Resetear contraseñas', asignado: false }
+                        { id: 22, nombre: 'Crear usuarios', asignado: false },
+                        { id: 23, nombre: 'Editar usuarios', asignado: false },
+                        { id: 24, nombre: 'Desactivar usuarios', asignado: false },
+                        { id: 25, nombre: 'Resetear contraseñas', asignado: false }
                     ]
                 },
                 {
                     id: 38,
                     nombre: 'Roles y Permisos',
                     permisos: [
-                        { id: 39, nombre: 'Gestionar roles', asignado: false },
-                        { id: 40, nombre: 'Asignar permisos', asignado: false }
+                        { id: 26, nombre: 'Gestionar roles', asignado: false },
+                        { id: 27, nombre: 'Asignar permisos', asignado: false }
                     ]
                 }
             ]
@@ -166,21 +183,43 @@ export class RolAdmin implements OnInit {
         }
     }
 
-    cargarPermisosPorRol(rolId: number) {
-        // TODO: Reemplazar con llamada real al API
-        const permisosAsignados = rolId % 2 === 0 ? [1, 3, 6, 8, 10, 13, 16, 19, 22, 26, 31, 34] : [2, 4, 7, 9, 11, 14, 17, 20, 23, 27, 32, 35];
+    cargarPermisosPorRol(id: number) {
+        this.loading.set(true);
 
-        const modulosConEstado: Modulo[] = JSON.parse(JSON.stringify(this.modulosBase));
+        this.rolService.obtenerPermisosPorRol(id).subscribe({
+            next: (response) => {
+                // Extraer solo los IDs de los permisos retornados por el API
+                const permisosAsignados = response.data.map((permiso) => permiso.id);
 
-        modulosConEstado.forEach((modulo) => {
-            modulo.submodulos.forEach((submodulo) => {
-                submodulo.permisos.forEach((permiso) => {
-                    permiso.asignado = permisosAsignados.includes(permiso.id);
+                // Clonar la estructura base de módulos
+                const modulosConEstado: Modulo[] = JSON.parse(JSON.stringify(this.modulosBase));
+
+                // Marcar como asignados los permisos que están en el array
+                modulosConEstado.forEach((modulo) => {
+                    modulo.submodulos.forEach((submodulo) => {
+                        submodulo.permisos.forEach((permiso) => {
+                            permiso.asignado = permisosAsignados.includes(permiso.id);
+                        });
+                    });
                 });
-            });
-        });
 
-        this.modulos.set(modulosConEstado);
+                this.modulos.set(modulosConEstado);
+                this.loading.set(false);
+            },
+            error: (error) => {
+                console.error('Error al cargar permisos del rol:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error al Cargar Permisos',
+                    detail: 'No se pudieron obtener los permisos del rol seleccionado',
+                    life: 4000
+                });
+                this.loading.set(false);
+
+                // En caso de error, mostrar estructura vacía
+                this.modulos.set(JSON.parse(JSON.stringify(this.modulosBase)));
+            }
+        });
     }
 
     togglePermiso(permiso: Permiso, submodulo: Submodulo, modulo: Modulo) {
