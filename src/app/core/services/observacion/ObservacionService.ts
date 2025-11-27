@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { Observacion } from '@/models/observacion/observacion';
-import {Historial} from "@/models/observacion/historial";
+import { Historial } from '@/models/observacion/historial';
 
 @Injectable({
     providedIn: 'root'
@@ -17,10 +17,10 @@ export class ObservacionService {
     obtenerPorFiltro(params?: any) {
         return this.http.get<ResponseData<Observacion[]>>(`${this.apiUrl}/observaciones`, { params: params });
     }
-    obtenerOrigen(id: number){
+    obtenerOrigen(id: number) {
         return this.http.get<ResponseData<Observacion>>(`${this.apiUrl}/${id}/origen`);
     }
-    obtenerResponsabilidad(id: number){
+    obtenerResponsabilidad(id: number) {
         return this.http.get<ResponseData<Observacion>>(`${this.apiUrl}/${id}/responsabilidad`);
     }
 
@@ -29,7 +29,7 @@ export class ObservacionService {
     }
 
     actualizarEstado(id: number, idEstatus) {
-        console.log(idEstatus)
+        console.log(idEstatus);
         return this.http.put(`${this.apiUrl}/${id}/estado`, null, { params: { idEstatus } });
     }
 

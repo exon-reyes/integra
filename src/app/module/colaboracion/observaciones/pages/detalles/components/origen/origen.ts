@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, signal} from '@angular/core';
-import {Panel} from 'primeng/panel';
-import {ObservacionService} from '@/core/services/observacion/ObservacionService';
-import {catchError, of} from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Panel } from 'primeng/panel';
+import { ObservacionService } from '@/core/services/observacion/ObservacionService';
+import { catchError, of } from 'rxjs';
 
 interface OrigenState {
     data?: any;
@@ -40,7 +40,9 @@ export class Origen {
     private readonly observacionService = inject(ObservacionService);
     // State signal
     private readonly origenState = signal<OrigenState>({
-        data: undefined, loading: false, error: undefined
+        data: undefined,
+        loading: false,
+        error: undefined
     });
     // Computed properties derivadas del state
     readonly loading = computed(() => this.origenState().loading);
@@ -59,23 +61,34 @@ export class Origen {
 
     // Método para cargar datos
     private loadOrigen(id: number): void {
-        this.origenState.set({data: undefined, loading: true, error: undefined});
+        this.origenState.set({ data: undefined, loading: true, error: undefined });
 
-        this.observacionService.obtenerOrigen(id).pipe(catchError(error => of({
-            success: false,
-            data: null,
-            message: error.message || 'Error al cargar origen',
-            timestamp: new Date().toISOString()
-        }))).subscribe(response => {
-            if (response.success) {
-                this.origenState.set({
-                    data: response.data, loading: false, error: undefined
-                });
-            } else {
-                this.origenState.set({
-                    data: undefined, loading: false, error: 'No se pudo obtener la información'
-                });
-            }
-        });
+        this.observacionService
+            .obtenerOrigen(id)
+            .pipe(
+                catchError((error) =>
+                    of({
+                        success: false,
+                        data: null,
+                        message: error.message || 'Error al cargar origen',
+                        timestamp: new Date().toISOString()
+                    })
+                )
+            )
+            .subscribe((response) => {
+                if (response.success) {
+                    this.origenState.set({
+                        data: response.data,
+                        loading: false,
+                        error: undefined
+                    });
+                } else {
+                    this.origenState.set({
+                        data: undefined,
+                        loading: false,
+                        error: 'No se pudo obtener la información'
+                    });
+                }
+            });
     }
 }

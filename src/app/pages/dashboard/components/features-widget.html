@@ -1,0 +1,46 @@
+<div class="grid grid-cols-12 gap-6 justify-center">
+    <!--         Secciones-->
+    <ng-container *ngFor="let section of featuresData">
+
+        <!-- Separador de sección -->
+        <div class="col-span-12 flex items-center my-4">
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            <span class="px-4 text-gray-700 font-semibold dark:text-gray-300 text-sm uppercase tracking-widest">
+          {{ section.title }}
+        </span>
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+        </div>
+
+
+        <!--             Tarjetas de módulo-->
+        <div *ngFor="let feature of section.features" [routerLink]="feature.urlNavigator"
+             class="p-4 col-span-12 transition transform duration-300 hover:scale-105 sm:col-span-6 lg:col-span-3 cursor-pointer  bg-white h-42 w-auto border border-gray-200 hover:shadow-xl rounded-2xl">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="col-span-3 mt-4">
+                    <div class="flex flex-row items-center gap-3">
+                        <div [ngClass]="feature.colorBg"
+                             class="flex items-center justify-center w-10 h-10 min-h-10rem min-w-5 rounded-sm">
+                            @if (feature.piIcon) {
+                                <i [ngClass]="feature.piIcon" class="pi"
+                                   style="font-size: 1.2rem"></i>
+                            } @else if (feature.inlineSvg) {
+                                <span [innerHTML]="feature.inlineSvg"></span>
+                            } @else if (feature.iscIcon) {
+                                <i [ngClass]="feature.iscIcon" class="isc"></i>
+                            } @else if (feature.srcIconName) {
+                                <img height="22" ngSrc="/assets/icon/{{feature.srcIconName}}" width="22">
+                            }
+                        </div>
+                        <span class="font-bold">{{feature.title}}</span>
+                    </div>
+                </div>
+                <div class="col-span-3 text-sm">
+                    {{feature.description}}
+                </div>
+            </div>
+        </div>
+
+    </ng-container>
+
+
+</div>

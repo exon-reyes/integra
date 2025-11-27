@@ -1,0 +1,518 @@
+<!--<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-950 p-6">-->
+<!--    <div class="max-w-lg w-full bg-white/80 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl shadow-2xl p-10 text-center border border-gray-200/50 dark:border-gray-700/40">-->
+
+<!--        &lt;!&ndash; Icono &ndash;&gt;-->
+<!--        <div class="flex justify-center mb-8">-->
+<!--            <div class="w-24 h-24 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shadow-inner">-->
+<!--                <svg class="h-14 w-14 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+<!--                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />-->
+<!--                </svg>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Título &ndash;&gt;-->
+<!--        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">-->
+<!--            Página en Construcción-->
+<!--        </h1>-->
+
+<!--        &lt;!&ndash; Texto &ndash;&gt;-->
+<!--        <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8">-->
+<!--            Estamos desarrollando una experiencia moderna y eficiente para ti.-->
+<!--            Muy pronto estará lista.-->
+<!--        </p>-->
+
+<!--        &lt;!&ndash; Línea divisoria &ndash;&gt;-->
+<!--        <div class="border-t border-gray-300 dark:border-gray-700 my-6"></div>-->
+
+<!--        &lt;!&ndash; Footer &ndash;&gt;-->
+<!--        <div class="text-gray-500 dark:text-gray-400 text-sm">-->
+<!--            <p>&copy; 2025 Exon &mdash; Integra. Todos los derechos reservados.</p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<app-title title="Gestión de usuarios"
+           iconClass="isc i-user"
+           description="Administración de usuarios de acceso, asignación de roles y permisos especiales"/>
+
+@if (loading) {
+    <div class="flex items-center justify-center h-96">
+        <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-gray-600">Cargando usuarios...</p>
+        </div>
+    </div>
+} @else {
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-3">
+
+        <!-- Panel izquierdo: Lista de usuarios -->
+        <div
+            class="xl:col-span-4 bg-white rounded-2xl shadow-sm border border-gray-200/60 h-96 xl:h-[calc(100vh-144px)] overflow-y-auto">
+
+            <div class="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="text-xl font-semibold text-gray-800">Usuarios del Sistema</div>
+                        <p class="text-sm text-gray-600 mt-1">Gestiona accesos</p>
+                    </div>
+                    <div class="p-2 bg-gray-100 rounded-lg text-center flex-shrink-0">
+                        <div class="text-lg font-bold text-gray-900 leading-none">{{ usuarios?.length || 0 }}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">Total</div>
+                    </div>
+                </div>
+
+                <p-button
+                    (click)="agregarUsuario()"
+                    label="Nuevo Usuario"
+                    icon="pi pi-user-plus"
+                    styleClass="w-full p-button-success">
+                </p-button>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="px-6 py-3 border-b border-gray-100">
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text"
+                           [(ngModel)]="globalFilter"
+                           (input)="dt.filterGlobal(globalFilter, 'contains')"
+                           placeholder="Buscar usuario..."
+                           class="w-full p-inputtext-sm"/>
+                </span>
+            </div>
+
+            <!-- Tabla de usuarios -->
+            <p-table #dt [value]="usuarios" [scrollable]="true" class="p-datatable-sm"
+                     [globalFilterFields]="['nombre', 'email', 'roles.nombre']"
+                     scrollHeight="100%"
+                     [tableStyle]="{ 'min-width': '100%' }">
+
+                <ng-template pTemplate="header">
+                    <tr class="bg-white border-b border-gray-200">
+                        <th class="py-2.5 px-5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Usuario
+                        </th>
+                        <th class="py-2.5 px-5 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right w-40">
+                            Gestión
+                        </th>
+                    </tr>
+                </ng-template>
+
+                <ng-template let-usuario pTemplate="body">
+                    <tr class="border-b border-gray-100 cursor-pointer transition-colors duration-100"
+                        [class.bg-blue-50]="selectedUsuario?.id === usuario.id"
+                        [class.hover:bg-gray-50]="selectedUsuario?.id !== usuario.id"
+                        (click)="selectUsuario(usuario)">
+
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-7 h-7 rounded flex items-center justify-center text-xs font-medium flex-shrink-0"
+                                    [class.bg-gray-100]="selectedUsuario?.id !== usuario.id"
+                                    [class.text-gray-600]="selectedUsuario?.id !== usuario.id"
+                                    [class.bg-blue-200]="selectedUsuario?.id === usuario.id"
+                                    [class.text-blue-700]="selectedUsuario?.id === usuario.id">
+                                    {{ usuario.nombre.charAt(0).toUpperCase() }}
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <div class="font-medium text-sm truncate"
+                                         [class.text-blue-800]="selectedUsuario?.id === usuario.id"
+                                         [class.text-gray-800]="selectedUsuario?.id !== usuario.id">
+                                        {{ usuario.nombre }}
+                                    </div>
+                                    <p class="text-xs mt-0.5 truncate"
+                                       [class.text-blue-600]="selectedUsuario?.id === usuario.id"
+                                       [class.text-gray-600]="selectedUsuario?.id !== usuario.id">
+                                        {{ usuario.email }}
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <!-- Indicador de estado -->
+                                <span class="w-2 h-2 rounded-full flex-shrink-0"
+                                      [class.bg-green-500]="usuario.activo"
+                                      [class.bg-red-500]="!usuario.activo">
+                                </span>
+
+                                <div class="flex gap-1.5">
+                                    <button type="button"
+                                            (click)="editarUsuario(usuario, $event)"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded transition-colors text-indigo-600 hover:bg-indigo-50"
+                                            title="Editar">
+                                        <i class="pi pi-pencil text-sm"></i>
+                                    </button>
+
+                                    <button type="button"
+                                            (click)="eliminarUsuario(usuario, $event)"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded transition-colors text-red-600 hover:bg-red-50"
+                                            title="Eliminar">
+                                        <i class="pi pi-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Panel derecho: Detalles del usuario -->
+        <div
+            class="xl:col-span-8 bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden xl:h-[calc(100vh-144px)] flex flex-col">
+            @if (selectedUsuario) {
+                <!-- Header del usuario -->
+                <div class="px-6 py-4 border-b border-gray-100 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center">
+                                <span class="text-lg font-bold">
+                                    {{ selectedUsuario.nombre.charAt(0).toUpperCase() }}
+                                </span>
+                            </div>
+                            <div>
+                                <div class="text-lg font-semibold text-gray-900">{{ selectedUsuario.nombre }}</div>
+                                <p class="text-sm text-gray-500 mt-0.5">{{ selectedUsuario.email }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200">
+                            <span class="w-2 h-2 rounded-full"
+                                  [class.bg-green-500]="selectedUsuario.activo"
+                                  [class.bg-red-500]="!selectedUsuario.activo">
+                            </span>
+                            <span class="text-sm font-semibold"
+                                  [class.text-green-700]="selectedUsuario.activo"
+                                  [class.text-red-700]="!selectedUsuario.activo">
+                                {{ selectedUsuario.activo ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (loadingPermisos) {
+                    <div class="flex flex-col items-center justify-center h-96">
+                        <div
+                            class="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-6"></div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Cargando Permisos</h3>
+                        <p class="text-gray-500 text-center max-w-md">Obteniendo la configuración de permisos especiales
+                            del usuario...</p>
+                    </div>
+                } @else {
+                    <!-- Contenedor con scroll para el contenido -->
+                    <div class="flex-1 overflow-y-auto">
+                        <!-- Roles asignados -->
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">Roles Asignados</div>
+                                    <p class="text-xs text-gray-500 mt-0.5">
+                                        {{ selectedUsuario.roles?.length || 0 }} rol(es) activo(s)
+                                    </p>
+                                </div>
+                                <p-button
+                                    label="Gestionar Roles"
+                                    icon="pi pi-users"
+                                    size="small"
+                                    (onClick)="gestionarRoles(selectedUsuario)">
+                                </p-button>
+                            </div>
+
+                            @if (selectedUsuario.roles && selectedUsuario.roles.length > 0) {
+                                <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                    <p-table [value]="selectedUsuario.roles"
+                                             class="p-datatable-sm"
+                                             [tableStyle]="{ 'min-width': '100%' }">
+
+                                        <ng-template pTemplate="header">
+                                            <tr class="bg-gray-50 border-b border-gray-200">
+                                                <th class="py-3 px-4 text-xs font-semibold text-gray-700 uppercase tracking-wide text-left">
+                                                    <div class="flex items-center gap-2">
+                                                        <i class="pi pi-shield text-indigo-600"></i>
+                                                        Rol
+                                                    </div>
+                                                </th>
+                                                <th class="py-3 px-4 text-xs font-semibold text-gray-700 uppercase tracking-wide text-left">
+                                                    Descripción
+                                                </th>
+                                                <th class="py-3 px-4 text-xs font-semibold text-gray-700 uppercase tracking-wide text-center w-32">
+                                                    Acciones
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+
+                                        <ng-template pTemplate="body" let-rol>
+                                            <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                                                <td class="py-3 px-4">
+                                                    <div class="flex items-center gap-2">
+                                                        <div
+                                                            class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                                            {{ rol.nombre.charAt(0).toUpperCase() }}
+                                                        </div>
+                                                        <span
+                                                            class="font-semibold text-gray-800 text-sm">{{ rol.nombre }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 px-4">
+                                                    <span class="text-sm text-gray-600">
+                                                        {{ rol.descripcion || 'Sin descripción disponible' }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-3 px-4 text-center">
+                                                    <button type="button"
+                                                            (click)="removerRol(selectedUsuario, rol)"
+                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                                            title="Remover rol">
+                                                        <i class="pi pi-times text-sm"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+
+                                        <ng-template pTemplate="emptymessage">
+                                            <tr>
+                                                <td colspan="3" class="text-center py-8 text-gray-500 text-sm">
+                                                    No hay roles asignados
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+                            } @else {
+                                <div class="text-center py-12 border border-gray-200 rounded-xl bg-gray-50">
+                                    <div
+                                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center mx-auto mb-4">
+                                        <i class="pi pi-exclamation-triangle text-3xl text-red-500"></i>
+                                    </div>
+                                    <div class="text-xl font-semibold text-gray-900 mb-1">Sin Roles Asignados</div>
+                                    <p class="text-sm text-gray-500 mb-4">Este usuario no tiene roles configurados</p>
+                                    <p-button
+                                        label="Asignar Roles"
+                                        icon="pi pi-plus"
+                                        size="small"
+                                        (onClick)="gestionarRoles(selectedUsuario)">
+                                    </p-button>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- PERMISOS ESPECIALES - NUEVA SECCIÓN -->
+                        <div class="px-6 py-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">Permisos Especiales</div>
+                                    <p class="text-xs text-gray-500 mt-0.5">
+                                        {{ contarTotalPermisosActivos() }} permiso(s) especial(es) activo(s) -
+                                        Estos permisos se agregan a los de sus roles
+                                    </p>
+                                </div>
+                                <div class="flex gap-2">
+                                    @if (modoEdicionPermisos) {
+                                        <p-button
+                                            label="Guardar Permisos"
+                                            icon="pi pi-check"
+                                            size="small"
+                                            severity="success"
+                                            (onClick)="guardarPermisosEspeciales()">
+                                        </p-button>
+                                        <p-button
+                                            label="Cancelar"
+                                            icon="pi pi-times"
+                                            size="small"
+                                            severity="secondary"
+                                            (onClick)="cancelarEdicionPermisos()">
+                                        </p-button>
+                                    } @else {
+                                        <p-button
+                                            label="Editar Permisos"
+                                            icon="pi pi-pencil"
+                                            size="small"
+                                            (onClick)="activarEdicionPermisos()">
+                                        </p-button>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (modoEdicionPermisos) {
+                                <div class="px-4 py-3 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="pi pi-exclamation-triangle text-orange-600"></i>
+                                        <span class="text-sm font-medium text-orange-800">
+                                            Modo edición activado - Los cambios se guardarán al presionar "Guardar Permisos"
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (modulosPermisos.length > 0) {
+                                <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                    <p-tabs value="1">
+                                        <p-tablist>
+                                            @for (modulo of modulosPermisos; track modulo.id) {
+                                                <p-tab [value]="modulo.id.toString()">
+                                                    {{ modulo.nombre }}
+                                                    <span
+                                                        class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                                        {{ contarPermisosActivosModulo(modulo) }}
+                                                    </span>
+                                                </p-tab>
+                                            }
+                                        </p-tablist>
+
+                                        <p-tabpanels>
+                                            @for (modulo of modulosPermisos; track modulo.id) {
+                                                <p-tabpanel [value]="modulo.id.toString()">
+                                                    <div class="overflow-y-auto p-4" style="max-height: 60vh;">
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            @for (submodulo of modulo.submodulos; track submodulo.id) {
+                                                                <div
+                                                                    class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                                                    <div
+                                                                        class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                                                                        <div class="flex items-center justify-between">
+                                                                            <div
+                                                                                class="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                                                                                <i class="pi pi-folder text-blue-600"></i>
+                                                                                {{ submodulo.nombre }}
+                                                                                <span
+                                                                                    class="text-xs text-gray-500 ml-2 font-normal">
+                                                                                    ({{ contarPermisosActivosSubmodulo(submodulo) }}
+                                                                                    de {{ submodulo.permisos.length }}
+                                                                                    permisos)
+                                                                                </span>
+                                                                            </div>
+                                                                            <div class="flex items-center gap-2">
+                                                                                <label
+                                                                                    class="text-xs text-gray-600 cursor-pointer select-none"
+                                                                                    [for]="'select-all-' + submodulo.id">
+                                                                                    Todos
+                                                                                </label>
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    [id]="'select-all-' + submodulo.id"
+                                                                                    [checked]="todosPermisosSeleccionados(submodulo)"
+                                                                                    [indeterminate]="algunosPermisosSeleccionados(submodulo)"
+                                                                                    [disabled]="!modoEdicionPermisos"
+                                                                                    (change)="toggleTodosPermisosUsuario(submodulo)"
+                                                                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                                    [class.cursor-pointer]="modoEdicionPermisos"
+                                                                                    [class.cursor-not-allowed]="!modoEdicionPermisos"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="p-3">
+                                                                        @for (
+                                                                            permiso of submodulo.permisos; track permiso) {
+                                                                            <div
+                                                                                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 transition-all group">
+                                                                                <label
+                                                                                    class="flex-1 text-sm text-gray-700 cursor-pointer font-medium select-none"
+                                                                                    [for]="'permiso-' + permiso.id">
+                                                                                    <span
+                                                                                        class="flex items-center gap-2.5 group-hover:text-gray-900 transition-colors">
+                                                                                        {{ permiso.nombre }}
+                                                                                    </span>
+                                                                                </label>
+
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    [id]="'permiso-' + permiso.id"
+                                                                                    [checked]="permiso.asignado"
+                                                                                    [disabled]="!modoEdicionPermisos"
+                                                                                    (change)="togglePermisoUsuario(permiso)"
+                                                                                    class="h-5 w-5 rounded-md border-gray-300 text-green-600 focus:ring-green-500 transition-colors shadow-sm"
+                                                                                    [class.cursor-pointer]="modoEdicionPermisos"
+                                                                                    [class.cursor-not-allowed]="!modoEdicionPermisos"
+                                                                                />
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </p-tabpanel>
+                                            }
+                                        </p-tabpanels>
+                                    </p-tabs>
+                                </div>
+                            } @else {
+                                <div class="text-center py-12 border border-gray-200 rounded-xl bg-gray-50">
+                                    <div
+                                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mx-auto mb-4">
+                                        <i class="pi pi-shield text-3xl text-blue-500"></i>
+                                    </div>
+                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Sin Permisos Especiales</h3>
+                                    <p class="text-sm text-gray-500 mb-4">
+                                        Este usuario no tiene permisos especiales configurados.
+                                        Los permisos especiales se agregan a los permisos de sus roles.
+                                    </p>
+                                    <p-button
+                                        label="Agregar Permisos Especiales"
+                                        icon="pi pi-plus"
+                                        size="small"
+                                        (onClick)="activarEdicionPermisos()">
+                                    </p-button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <!-- Fin del contenedor con scroll -->
+
+                        <!-- Acciones del usuario -->
+                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs text-gray-500">
+                                <i class="pi pi-calendar text-gray-400 mr-1"></i>
+                                Última actualización: {{ selectedUsuario.updatedAt | date:'short' }}
+                            </div>
+                            <div class="flex gap-2">
+                                <p-button
+                                    [label]="selectedUsuario.activo ? 'Desactivar' : 'Activar'"
+                                    [icon]="selectedUsuario.activo ? 'pi pi-lock' : 'pi pi-lock-open'"
+                                    size="small"
+                                    [severity]="selectedUsuario.activo ? 'warn' : 'success'"
+                                    (onClick)="toggleEstado(selectedUsuario, $event)">
+                                </p-button>
+                                <p-button
+                                    label="Editar Usuario"
+                                    icon="pi pi-pencil"
+                                    size="small"
+                                    severity="secondary"
+                                    (onClick)="editarUsuario(selectedUsuario,$event)">
+                                </p-button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            } @else {
+                <!-- Estado vacío -->
+                <div class="flex flex-col items-center justify-center h-full py-20 px-6">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mb-6">
+                        <i class="pi pi-user text-4xl text-blue-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Selecciona un Usuario</h3>
+                    <p class="text-gray-500 text-center max-w-md">
+                        Elige un usuario del panel izquierdo para ver sus detalles, roles asignados y gestionar sus
+                        permisos especiales
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Modal para agregar nuevo usuario -->
+<app-nuevo-usuario-modal
+    [(visible)]="mostrarModalNuevoUsuario"
+    (visibleChange)="onModalClosed()"
+    (usuarioCreado)="onUsuarioCreado()">
+</app-nuevo-usuario-modal>

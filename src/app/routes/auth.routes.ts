@@ -1,15 +1,15 @@
 import { Routes } from '@angular/router';
-import { LoginGuard } from '@/core/guards/LoginGuard';
-import { Access } from '@/module/seguridad/pages/access';
-import { Error } from '@/module/seguridad/pages/error';
-import { Login } from '@/module/seguridad/pages/login/login';
+import { LoginGuard } from '@/core/security/LoginGuard';
 
 export default [
-    { path: 'access', component: Access },
-    { path: 'error', component: Error },
+    { path: 'denied', loadComponent: () => import('@/module/seguridad/pages/denied').then((value) => value.Denied) },
     {
         path: 'login',
-        component: Login,
+        loadComponent: () => import('@/module/seguridad/pages/login/login').then((value) => value.Login),
         canActivate: [LoginGuard]
+    },
+    {
+        path: '**',
+        loadComponent: () => import('@/pages/notfound').then((value) => value.Notfound)
     }
 ] as Routes;

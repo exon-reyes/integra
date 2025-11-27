@@ -64,7 +64,7 @@ export class AppMenu implements OnInit {
                 permission: Autoridades.VER_MODULO_RRHH,
                 icon: 'isc i-member',
                 items: [
-                    { label: 'Empleados', permission: Autoridades.VER_SUBMODULO_EMPLEADOS, icon: 'isc i-member', routerLink: ['rrhh/empleados'] },
+                    { label: 'Empleados', permission: Autoridades.VER_SUBMODULO_EMPLEADOS, icon: 'isc i-member', routerLink: ['empleado/admin'] },
                     {
                         label: 'Gestión de asistencia',
                         permission: Autoridades.VER_SUBMODULO_INFORME_ASISTENCIA,

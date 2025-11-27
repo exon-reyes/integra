@@ -1,15 +1,14 @@
-import {Injectable, signal} from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class SearchStatusService {
-  searching = signal<boolean>(false)
+    searching = signal<boolean>(false);
 
-  constructor() {
-  }
+    constructor() {}
 
-  state(status: boolean) {
-    this.searching.set(status)
-  }
+    state(status: boolean) {
+        this.searching.set(status);
+    }
 }

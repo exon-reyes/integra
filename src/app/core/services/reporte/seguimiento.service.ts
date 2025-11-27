@@ -1,19 +1,19 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { TicketService } from '@/core/services/reporte/ticket.service';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class SeguimientoService {
-  private ticketService = inject(TicketService);
+    private ticketService = inject(TicketService);
 
-  crear(ticketId: number, seguimiento: { descripcion: string }): Observable<ResponseData<void>> {
-    const params = {
-      idTicket: ticketId,
-      descripcion: seguimiento.descripcion
-    };
-    return this.ticketService.agregarSeguimiento(params);
-  }
+    crear(ticketId: number, seguimiento: { descripcion: string }): Observable<ResponseData<void>> {
+        const params = {
+            idTicket: ticketId,
+            descripcion: seguimiento.descripcion
+        };
+        return this.ticketService.agregarSeguimiento(params);
+    }
 }

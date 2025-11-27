@@ -1,0 +1,107 @@
+<div class="p-6 bg-white rounded-2xl shadow-md border border-slate-200">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-slate-800">REPORTE DE ASISTENCIA</h1>
+    </div>
+
+    <!-- LEYENDA -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-8 text-xs">
+        <span><strong>F:</strong> Falta</span>
+        <span><strong>P:</strong> Permiso</span>
+        <span><strong>S:</strong> Suspensión</span>
+        <span><strong>V:</strong> Vacaciones</span>
+        <span><strong>B:</strong> Baja</span>
+        <span><strong>C:</strong> Capacitación</span>
+        <span><strong>D:</strong> Descanso</span>
+        <span><strong>I:</strong> Incapacidad</span>
+        <span><strong>PF:</strong> Perm. Fallecimiento</span>
+        <span><strong>LP:</strong> Licencia Paternidad</span>
+    </div>
+
+    <!-- DATOS DEL COLABORADOR -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+        <div class="space-y-2">
+            <p class="text-sm text-slate-500">COLABORADOR</p>
+            <p class="text-base font-semibold text-slate-800">Juan Pérez</p>
+
+            <p class="text-sm text-slate-500">PUESTO DE TRABAJO</p>
+            <p class="text-base font-semibold text-slate-800">Cajero</p>
+
+            <p class="text-sm text-slate-500">CLAVE</p>
+            <p class="text-base font-semibold text-slate-800">000123</p>
+        </div>
+
+        <div class="space-y-2">
+            <p class="text-sm text-slate-500">ZONA OPERATIVA</p>
+            <p class="text-base font-semibold text-slate-800">Norte 1</p>
+
+            <p class="text-sm text-slate-500">UNIDAD ASIGNADA</p>
+            <p class="text-base font-semibold text-slate-800">Sucursal Centro</p>
+        </div>
+    </div>
+
+    <!-- TABLA DE ASISTENCIA -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+
+            <thead>
+            <tr class="bg-slate-200 text-slate-700 text-xs">
+                <th class="border border-slate-300 px-3 py-2">LUNES</th>
+                <th class="border border-slate-300 px-3 py-2">MARTES</th>
+                <th class="border border-slate-300 px-3 py-2">MIÉRCOLES</th>
+                <th class="border border-slate-300 px-3 py-2">JUEVES</th>
+                <th class="border border-slate-300 px-3 py-2">VIERNES</th>
+                <th class="border border-slate-300 px-3 py-2">SÁBADO</th>
+                <th class="border border-slate-300 px-3 py-2">DOMINGO</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr class="text-center text-sm">
+                <td class="border border-slate-300 px-3 py-2">P</td>
+                <td class="border border-slate-300 px-3 py-2">F</td>
+                <td class="border border-slate-300 px-3 py-2">V</td>
+                <td class="border border-slate-300 px-3 py-2">D</td>
+                <td class="border border-slate-300 px-3 py-2">I</td>
+                <td class="border border-slate-300 px-3 py-2">C</td>
+                <td class="border border-slate-300 px-3 py-2">—</td>
+            </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+
+        <div class="p-4 border rounded-lg bg-slate-50">
+            <h4 class="text-sm font-bold text-slate-700 mb-2">Totales</h4>
+            <p class="text-sm text-slate-600">Faltas: 1</p>
+            <p class="text-sm text-slate-600">Permisos: 1</p>
+            <p class="text-sm text-slate-600">Vacaciones: 1</p>
+        </div>
+
+        <div class="p-4 border rounded-lg bg-slate-50">
+            <h4 class="text-sm font-bold text-slate-700 mb-2">Horas extras</h4>
+            <p class="text-sm text-slate-600">Horas: 4</p>
+            <p class="text-sm text-slate-600">Autorizó: Supervisor</p>
+        </div>
+
+        <div class="p-4 border rounded-lg bg-slate-50">
+            <h4 class="text-sm font-bold text-slate-700 mb-2">Incidencias</h4>
+            <p class="text-sm text-slate-600">Motivo: Emergencia familiar</p>
+        </div>
+
+    </div>
+
+    <!-- COMENTARIO -->
+    <div class="mt-8">
+        <h4 class="text-sm font-semibold text-slate-700 mb-1">Comentario</h4>
+        <p class="text-sm text-slate-600 bg-slate-50 border rounded-lg p-3">
+            El colaborador justificó la falta del lunes.
+        </p>
+    </div>
+
+</div>

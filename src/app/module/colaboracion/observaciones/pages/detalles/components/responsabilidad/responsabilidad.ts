@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, signal} from '@angular/core';
-import {Panel} from 'primeng/panel';
-import {ObservacionService} from '@/core/services/observacion/ObservacionService';
-import {catchError, of} from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Panel } from 'primeng/panel';
+import { ObservacionService } from '@/core/services/observacion/ObservacionService';
+import { catchError, of } from 'rxjs';
 
 interface ResponsabilidadState {
     data?: any;
@@ -23,7 +23,9 @@ export class Responsabilidad {
     private readonly observacionService = inject(ObservacionService);
     // State signal
     private readonly responsabilidadState = signal<ResponsabilidadState>({
-        data: undefined, loading: false, error: undefined
+        data: undefined,
+        loading: false,
+        error: undefined
     });
     // Computed properties derivadas del state
     readonly loading = computed(() => this.responsabilidadState().loading);
@@ -50,23 +52,34 @@ export class Responsabilidad {
 
     // Método para cargar datos
     private loadResponsabilidad(id: number): void {
-        this.responsabilidadState.set({data: undefined, loading: true, error: undefined});
+        this.responsabilidadState.set({ data: undefined, loading: true, error: undefined });
 
-        this.observacionService.obtenerResponsabilidad(id).pipe(catchError(error => of({
-            success: false,
-            data: null,
-            message: error.message || 'Error al cargar responsabilidad',
-            timestamp: new Date().toISOString()
-        }))).subscribe(response => {
-            if (response.success) {
-                this.responsabilidadState.set({
-                    data: response.data, loading: false, error: undefined
-                });
-            } else {
-                this.responsabilidadState.set({
-                    data: undefined, loading: false, error: 'No se pudo obtener la información'
-                });
-            }
-        });
+        this.observacionService
+            .obtenerResponsabilidad(id)
+            .pipe(
+                catchError((error) =>
+                    of({
+                        success: false,
+                        data: null,
+                        message: error.message || 'Error al cargar responsabilidad',
+                        timestamp: new Date().toISOString()
+                    })
+                )
+            )
+            .subscribe((response) => {
+                if (response.success) {
+                    this.responsabilidadState.set({
+                        data: response.data,
+                        loading: false,
+                        error: undefined
+                    });
+                } else {
+                    this.responsabilidadState.set({
+                        data: undefined,
+                        loading: false,
+                        error: 'No se pudo obtener la información'
+                    });
+                }
+            });
     }
 }

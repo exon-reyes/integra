@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable } from 'rxjs';
-import { ResponseData } from '@/shared/util/responseData';
-import { AbstractService } from '@/shared/service/abstract-service';
+import { ResponseData } from '@/core/responseData';
+import { AbstractService } from '@/core/services/abstract-service';
 import { Area } from '@/models/area/area';
 
 @Injectable({
@@ -17,7 +17,7 @@ export class AreaService extends AbstractService {
     obtenerAreas(filtro): Observable<ResponseData<Area[]>> {
         return this.http.get<ResponseData<Area[]>>(`${this.apiUrl}/areas`, { params: filtro });
     }
-    crearArea(area:Area): Observable<ResponseData<Area>> {
+    crearArea(area: Area): Observable<ResponseData<Area>> {
         return this.http.post<ResponseData<Area>>(`${this.apiUrl}/areas`, area);
     }
 

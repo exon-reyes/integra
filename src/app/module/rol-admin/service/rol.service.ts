@@ -1,19 +1,22 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 
 export interface Rol {
     id: number;
     nombre: string;
     descripcion?: string;
+    rolDefault?: boolean;
+    activo?: boolean;
+    permisos?: PermisoApi[];
 }
 
 export interface PermisoApi {
-    id: number;
-    name: string;
-    description: string;
+    id: string;
+    nombre: string;
+    descripcion: string;
 }
 
 @Injectable({
@@ -21,15 +24,28 @@ export interface PermisoApi {
 })
 export class RolService {
     private http = inject(HttpClient);
-    private apiUrl = `${environment.integraApi}/acceso`;
+    private apiUrl = `${environment.integraApi}/roles`;
 
     obtenerRoles(): Observable<ResponseData<Rol[]>> {
-        return this.http.get<ResponseData<Rol[]>>(`${this.apiUrl}/roles`);
-    }
-    obtenerTodosLosPermisos(): Observable<ResponseData<any>> {
-        return this.http.get<ResponseData<any>>(`${this.apiUrl}/permisos`);
+        return this.http.get<ResponseData<Rol[]>>(this.apiUrl);
     }
     obtenerPermisosPorRol(id: number): Observable<ResponseData<PermisoApi[]>> {
-        return this.http.get<ResponseData<PermisoApi[]>>(`${this.apiUrl}/permisos/rol/${id}`);
+        return this.http.get<ResponseData<PermisoApi[]>>(`${this.apiUrl}/${id}/permisos`);
+    }
+    actualizarNombreRol(id: number, data: any) {
+        return this.http.put<ResponseData<any>>(`${this.apiUrl}/${id}/actualizar`, data);
+    }
+
+    actualizarPermisosRol(id: number, permisosIds: string[]): Observable<ResponseData<string>> {
+        return this.http.put<ResponseData<string>>(`${this.apiUrl}/${id}/permisos`, {
+            permisosIds: permisosIds
+        });
+    }
+    eliminarRol(id: number): Observable<ResponseData<string>> {
+        return this.http.delete<ResponseData<string>>(`${this.apiUrl}/${id}`);
+    }
+
+    agregarRol(data: { nombre: string; descripcion?: string }): Observable<ResponseData<Rol>> {
+        return this.http.post<ResponseData<Rol>>(`${this.apiUrl}`, data);
     }
 }

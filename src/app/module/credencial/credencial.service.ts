@@ -1,9 +1,10 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {ResponseData} from "@/shared/util/responseData";
-import {environment} from "@env/environment";
-export interface TipoCuenta  {
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ResponseData } from '@/core/responseData';
+import { environment } from '@env/environment';
+
+export interface TipoCuenta {
     id: number;
     nombre: string;
 }
@@ -36,9 +37,7 @@ export interface FiltroCuenta {
 export class CredencialService {
     private apiUrl = `${environment.integraApi}/credenciales`;
 
-    constructor(private http: HttpClient) {
-
-    }
+    constructor(private http: HttpClient) {}
 
     obtenerCredenciales(filtro?: FiltroCuenta): Observable<ResponseData<CredencialDto[]>> {
         let params = new HttpParams();
@@ -53,7 +52,7 @@ export class CredencialService {
             params = params.set('idTipo', filtro.idTipo.toString());
         }
 
-        return this.http.get<ResponseData<CredencialDto[]>>(this.apiUrl, {params});
+        return this.http.get<ResponseData<CredencialDto[]>>(this.apiUrl, { params });
     }
 
     crearCredencial(credencial: any): Observable<ResponseData<void>> {
@@ -67,15 +66,15 @@ export class CredencialService {
     eliminarCredencial(id: number): Observable<ResponseData<void>> {
         return this.http.delete<ResponseData<void>>(`${this.apiUrl}/${id}`);
     }
-    obtenerTipoCuentas(){
+    obtenerTipoCuentas() {
         return this.http.get<ResponseData<TipoCuenta[]>>(`${this.apiUrl}/tipos`);
     }
 
-    crearTipoCuenta(tipo: {nombre: string}): Observable<ResponseData<void>> {
+    crearTipoCuenta(tipo: { nombre: string }): Observable<ResponseData<void>> {
         return this.http.post<ResponseData<void>>(`${this.apiUrl}/tipo`, tipo);
     }
 
-    actualizarTipoCuenta(id: number, tipo: {nombre: string}): Observable<ResponseData<void>> {
+    actualizarTipoCuenta(id: number, tipo: { nombre: string }): Observable<ResponseData<void>> {
         return this.http.put<ResponseData<void>>(`${this.apiUrl}/tipo/${id}`, tipo);
     }
 

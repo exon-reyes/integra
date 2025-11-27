@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
+import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { Ticket } from '@/models/reporte/ticket';
 import { Seguimiento } from '@/models/reporte/seguimiento';
 import { Checklist } from '@/models/checklist/checklist';
@@ -11,7 +11,6 @@ import { Checklist } from '@/models/checklist/checklist';
 
 @Injectable({ providedIn: 'root' })
 export class PdfGeneratorService {
-
     private extractImages(html: string): string[] {
         const images: string[] = [];
         const imgRegex = /<img[^>]*src="(data:image\/[^;]+;base64,[^"]+)"[^>]*>/gi;
@@ -33,7 +32,10 @@ export class PdfGeneratorService {
             .replace(/<ol[^>]*>/gi, '\n')
             .replace(/<\/ol>/gi, '\n')
             .replace(/<li\s*[^>]*>/gi, () => `${counter++}. `)
-            .replace(/<ul[^>]*>/gi, () => { counter = 1; return '\n'; })
+            .replace(/<ul[^>]*>/gi, () => {
+                counter = 1;
+                return '\n';
+            })
             .replace(/<\/ul>/gi, '\n')
             .replace(/<li\s*[^>]*>/gi, '• ')
             .replace(/<\/li>/gi, '\n')
@@ -93,9 +95,7 @@ export class PdfGeneratorService {
             columns: [
                 {
                     width: 5,
-                    canvas: [
-                        { type: 'rect', x: 0, y: 0, w: 3, h: 15, color: '#2563eb' }
-                    ]
+                    canvas: [{ type: 'rect', x: 0, y: 0, w: 3, h: 15, color: '#2563eb' }]
                 },
                 {
                     width: '*',
@@ -140,30 +140,36 @@ export class PdfGeneratorService {
                 ]
             },
             ...(ticket.nombreArchivo ? [this.createKeyValuePair('Archivo adjunto', ticket.nombreArchivo)] : []),
-            ...(ticket.descripcion && (this.stripHtml(ticket.descripcion).trim() || this.extractImages(ticket.descripcion).length > 0) ? [
-                { text: 'Descripción', style: 'label', margin: [0, 10, 0, 5] as [number, number, number, number] },
-                ...this.createContentWithImages(ticket.descripcion)
-            ] : [])
+            ...(ticket.descripcion && (this.stripHtml(ticket.descripcion).trim() || this.extractImages(ticket.descripcion).length > 0)
+                ? [{ text: 'Descripción', style: 'label', margin: [0, 10, 0, 5] as [number, number, number, number] }, ...this.createContentWithImages(ticket.descripcion)]
+                : [])
         ];
     }
 
     private createChecklist(checklist: Checklist | null): Content[] {
         if (!checklist?.actividades?.length) return [];
 
-        const actividadItems: Content[] = checklist.actividades.map(actividad => ({
-            stack: [
-                {
-                    text: actividad.descripcion,
-                    style: actividad.completada ? 'actividadCompletada' : 'actividadPendiente'
-                },
-                ...(actividad.completada && actividad.fechaCompletado ? [{
-                    text: `Completada el ${this.formatDate(actividad.fechaCompletado)}`,
-                    style: 'fechaCompletado',
-                    margin: [0, 2, 0, 0] as [number, number, number, number]
-                }] : [])
-            ],
-            margin: [0, 3, 0, 3] as [number, number, number, number]
-        } as Content));
+        const actividadItems: Content[] = checklist.actividades.map(
+            (actividad) =>
+                ({
+                    stack: [
+                        {
+                            text: actividad.descripcion,
+                            style: actividad.completada ? 'actividadCompletada' : 'actividadPendiente'
+                        },
+                        ...(actividad.completada && actividad.fechaCompletado
+                            ? [
+                                  {
+                                      text: `Completada el ${this.formatDate(actividad.fechaCompletado)}`,
+                                      style: 'fechaCompletado',
+                                      margin: [0, 2, 0, 0] as [number, number, number, number]
+                                  }
+                              ]
+                            : [])
+                    ],
+                    margin: [0, 3, 0, 3] as [number, number, number, number]
+                }) as Content
+        );
 
         return [
             this.createSectionTitle('Lista de verificación de actividades'),
@@ -207,7 +213,7 @@ export class PdfGeneratorService {
             if (seg.descripcion && (this.stripHtml(seg.descripcion).trim() || this.extractImages(seg.descripcion).length > 0)) {
                 acc.push({ text: 'Descripción:', style: 'label', margin: [0, 3, 0, 2] as [number, number, number, number] });
                 const contentWithImages = this.createContentWithImages(seg.descripcion);
-                contentWithImages.forEach(item => {
+                contentWithImages.forEach((item) => {
                     if (typeof item === 'object' && item !== null && 'text' in item) {
                         acc.push({ text: (item as any).text, style: 'seguimientoDesc', margin: [10, 0, 0, 5] as [number, number, number, number] });
                     } else if (typeof item === 'object' && item !== null && 'image' in item) {
@@ -224,19 +230,12 @@ export class PdfGeneratorService {
             return acc;
         }, []);
 
-        return [
-            this.createSectionTitle(`Seguimientos (${historial.length})`),
-            ...seguimientoItems
-        ];
+        return [this.createSectionTitle(`Seguimientos (${historial.length})`), ...seguimientoItems];
     }
 
     async generarPdfTicket(ticket: Ticket, historial: Seguimiento[], checklist?: Checklist | null): Promise<void> {
         const docDefinition: TDocumentDefinitions = {
-            content: [
-                ...this.createTicketDetails(ticket),
-                ...this.createChecklist(checklist),
-                ...this.createSeguimientos(historial)
-            ],
+            content: [...this.createTicketDetails(ticket), ...this.createChecklist(checklist), ...this.createSeguimientos(historial)],
             styles: {
                 // Títulos principales
                 sectionTitle: {
@@ -265,7 +264,6 @@ export class PdfGeneratorService {
                     fontSize: 9,
                     color: '#333333'
                 },
-
 
                 // Seguimientos - Fecha
                 seguimientoFecha: {

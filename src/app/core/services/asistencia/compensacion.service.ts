@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 
 export interface CompensacionReporteQuery {
     clave: string;
@@ -32,7 +32,7 @@ export class CompensacionService {
     private readonly apiUrl = `${environment.integraApi}/opentime/compensaciones`;
 
     obtenerCompensaciones(params) {
-        return this.http.get<ResponseData<CompensacionReporteQuery[]>>(this.apiUrl, { params});
+        return this.http.get<ResponseData<CompensacionReporteQuery[]>>(this.apiUrl, { params });
     }
 
     descargarExcel(params?: EmpleadoReporteRequest) {

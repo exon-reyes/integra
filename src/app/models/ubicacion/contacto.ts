@@ -1,5 +1,5 @@
 import { Zona } from '@/models/ubicacion/zona';
-import {Estado} from "@/models/ubicacion/estado";
+import { Estado } from '@/models/ubicacion/estado';
 
 export interface Contacto {
     email?: string;
@@ -8,5 +8,4 @@ export interface Contacto {
     direccion?: string;
     zona?: Zona;
     estado?: Estado;
-
 }

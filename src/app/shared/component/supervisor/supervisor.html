@@ -1,0 +1,8 @@
+<p-select
+    (onChange)="selectedSupervisor.emit($event.value)"
+    [options]="empleados"
+    filter="true"
+    filterBy="nombreCompleto"
+    optionLabel="nombreCompleto" placeholder="Seleccionar supervisor"
+    showClear="true" class="w-full">
+</p-select>

@@ -6,7 +6,7 @@ import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { EmpleadoReporte } from '@/core/services/asistencia/asistencia.service';
-import { CompensacionService, CompensacionReporteQuery } from '@/core/services/asistencia/compensacion.service';
+import { CompensacionReporteQuery, CompensacionService } from '@/core/services/asistencia/compensacion.service';
 import { Zona } from '@/models/ubicacion/zona';
 import { InfoBasicaEmpleado } from '@/models/organizacion/empleado';
 import { Unidad } from '@/models/empresa/unidad';

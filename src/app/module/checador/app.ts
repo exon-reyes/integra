@@ -118,6 +118,14 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     readonly codigoSinCamara = this.codigoSinCamaraSignal.asReadonly();
     private readonly isLoadingSinCamaraSignal = signal(false);
     readonly isLoadingSinCamara = this.isLoadingSinCamaraSignal.asReadonly();
+    // Unidad data signals
+    private readonly unidadDataSignal = signal<any>(null);
+    readonly unidadData = this.unidadDataSignal.asReadonly();
+    // Computed para verificar tiempo de compensación
+    readonly tieneCompensacion = computed(() => {
+        const unidad = this.unidadDataSignal();
+        return unidad?.tiempoCompensacion && unidad.tiempoCompensacion !== '00:00:00';
+    });
     // ========== OPTIMIZACIONES DE RENDIMIENTO ==========
     private readonly trigger = new Subject<void>();
     private readonly destroy$ = new Subject<void>();
@@ -228,7 +236,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    // ========== AUTENTICACIÓN CON ALTA DISPONIBILIDAD ==========
+    // ========== AUTENTICACIÓN ==========
     aceptar(): void {
         const valor = this.valorIngresadoSignal();
         if (valor.length === 0 || this.isLoadingSignal()) return;
@@ -657,29 +665,29 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         switch (accion) {
             case 'iniciarJornada':
                 return {
-                    apiCall: this.checadorService.iniciarJornada(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.iniciarJornada(empleado.id, foto, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada iniciada con éxito!'
                 };
             case 'finalizarJornada':
                 return {
-                    apiCall: this.checadorService.finalizarJornada(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarJornada(empleado.id, foto, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada con éxito!'
                 };
             case 'finalizarJornadaDeposito':
                 return {
-                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, foto, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, foto, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada por depósito!'
                 };
             case 'iniciarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, foto, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, foto, unidadId, empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} iniciada!`
                 };
             case 'finalizarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, foto, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, foto, unidadId, empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:
@@ -866,29 +874,29 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         switch (accion) {
             case 'iniciarJornada':
                 return {
-                    apiCall: this.checadorService.iniciarJornada(empleado.id, null, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.iniciarJornada(empleado.id, null, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada iniciada con éxito!'
                 };
             case 'finalizarJornada':
                 return {
-                    apiCall: this.checadorService.finalizarJornada(empleado.id, null, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarJornada(empleado.id, null, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada con éxito!'
                 };
             case 'finalizarJornadaDeposito':
                 return {
-                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, null, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarJornadaDeposito(empleado.id, null, unidadId, empleado.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada por depósito!'
                 };
             case 'iniciarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, null, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.iniciarPausa(empleado.id, pausa, null, unidadId, empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} iniciada!`
                 };
             case 'finalizarPausa':
                 if (!pausa) return { apiCall: null, successMessage: '' };
                 return {
-                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, null, unidadId,empleado.unidadAsignadaId),
+                    apiCall: this.checadorService.finalizarPausa(empleado.id, pausa, null, unidadId, empleado.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pausa} finalizada!`
                 };
             default:
@@ -905,6 +913,16 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
             await this.cargarUnidades();
             this.mostrarModalUnidadSignal.set(true);
         } else {
+            // Cargar datos de unidad desde localStorage si existen
+            try {
+                const unidadGuardada = localStorage.getItem('unidad_reloj');
+                if (unidadGuardada) {
+                    const unidad = JSON.parse(unidadGuardada);
+                    this.unidadDataSignal.set(unidad);
+                }
+            } catch (error) {
+                console.warn('Error al cargar datos de unidad:', error);
+            }
             // Sincronizar configuración existente
             this.sincronizarConfiguracionSilenciosa();
         }
@@ -924,6 +942,9 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
             .subscribe((response) => {
                 if (response?.success && response.data) {
                     const unidadLocal = JSON.parse(localStorage.getItem('unidad_reloj') || '{}');
+
+                    // Almacenar datos completos de la unidad
+                    this.unidadDataSignal.set(response.data);
 
                     // Solo actualizar si la versión cambió
                     if (unidadLocal.versionKiosco !== response.data.versionKiosco) {

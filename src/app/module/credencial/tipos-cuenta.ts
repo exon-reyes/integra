@@ -1,9 +1,9 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
-import {Button} from "primeng/button";
-import {InputText} from "primeng/inputtext";
-import {FormsModule} from "@angular/forms";
-import {CredencialService, TipoCuenta} from './credencial.service';
-import {ConfirmationService} from 'primeng/api';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Button } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
+import { CredencialService, TipoCuenta } from './credencial.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
     selector: 'app-tipos-cuenta',

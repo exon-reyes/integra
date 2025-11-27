@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { Ticket } from '@/models/reporte/ticket';
 import { CrearTicketRequest } from '@/models/reporte/request/crear-ticket.request';
 import { Seguimiento } from '@/models/reporte/seguimiento';
@@ -40,8 +40,8 @@ export class TicketService {
     obtenerDetalles(folio: string) {
         return this.http.get<ResponseData<Ticket>>(`${this.apiUrl}/tickets/detalles`, { params: { folio } });
     }
-    obtenerDetallesCompletos(folio:string) {
-        return this.http.get<ResponseData<DetallesCompletos>>(`${this.apiUrl}/tickets/detalles-completos`, { params:{folio} });
+    obtenerDetallesCompletos(folio: string) {
+        return this.http.get<ResponseData<DetallesCompletos>>(`${this.apiUrl}/tickets/detalles-completos`, { params: { folio } });
     }
 
     obtenerHistorial(id: number) {

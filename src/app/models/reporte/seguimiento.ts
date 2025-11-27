@@ -7,8 +7,8 @@ export interface Seguimiento {
     estatus: Estatus;
     agente: string;
     descripcion: string;
-    creado:string;
-    rutaArchivo?:string;
+    creado: string;
+    rutaArchivo?: string;
     urlArchivo?: string;
-    nombreArchivo?:string;
+    nombreArchivo?: string;
 }

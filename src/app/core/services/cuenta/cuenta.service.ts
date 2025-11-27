@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { HttpClient } from '@angular/common/http';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { Proveedor } from '@/models/cuenta/proveedor';
 import { Cuenta } from '@/models/cuenta/cuenta';
 

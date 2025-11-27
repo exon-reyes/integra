@@ -29,10 +29,7 @@ export class RegistrarFormService implements OnDestroy {
             const formData = new FormData();
 
             // request como JSON real
-            formData.append(
-                'request',
-                new Blob([JSON.stringify(command)], { type: 'application/json' })
-            );
+            formData.append('request', new Blob([JSON.stringify(command)], { type: 'application/json' }));
 
             // archivo separado
             formData.append('archivo', archivo);

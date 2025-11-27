@@ -1,32 +1,31 @@
-import {Component, inject, OnInit, signal, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Table, TableModule} from 'primeng/table';
-import {ButtonModule} from 'primeng/button';
-import {InputTextModule} from 'primeng/inputtext';
-import {IconFieldModule} from 'primeng/iconfield';
-import {InputIconModule} from 'primeng/inputicon';
-import {MultiSelectModule} from 'primeng/multiselect';
-import {PanelModule} from 'primeng/panel';
-import {DialogModule} from 'primeng/dialog';
-import {PasswordModule} from 'primeng/password';
-import {ConfirmationService, MenuItem, MessageService} from 'primeng/api';
-import {ToastModule} from 'primeng/toast';
-import {MenuModule} from 'primeng/menu';
-import {ConfirmDialogModule} from 'primeng/confirmdialog';
-import {CredencialDto, CredencialService, TipoCuenta} from './credencial.service';
-import {Select} from "primeng/select";
-import {Textarea} from "primeng/textarea";
-import {Tooltip} from "primeng/tooltip";
-import {ExcelGeneratorService} from '@/shared/service/excel-generator.service';
-import {AuthService} from '@/core/services/auth/AuthService';
-import {Router} from '@angular/router';
-import {UnidadService} from "@/core/services/empresa/unidad.service";
-import {DepartamentoService} from "@/core/services/empresa/departamento.service";
-import {Unidad} from "@/models/empresa/unidad";
-import {Departamento} from "@/models/empresa/departamento";
-import {TiposCuenta} from './tipos-cuenta';
-import {TitleComponent} from "@/shared/component/title/title.component";
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Table, TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { PanelModule } from 'primeng/panel';
+import { DialogModule } from 'primeng/dialog';
+import { PasswordModule } from 'primeng/password';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { MenuModule } from 'primeng/menu';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { CredencialDto, CredencialService, TipoCuenta } from './credencial.service';
+import { Select } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
+import { Tooltip } from 'primeng/tooltip';
+import { ExcelGeneratorService } from '@/shared/service/excel-generator.service';
+import { Router } from '@angular/router';
+import { UnidadService } from '@/core/services/empresa/unidad.service';
+import { DepartamentoService } from '@/core/services/empresa/departamento.service';
+import { Unidad } from '@/models/empresa/unidad';
+import { Departamento } from '@/models/empresa/departamento';
+import { TiposCuenta } from './tipos-cuenta';
+import { TitleComponent } from '@/shared/component/title/title.component';
 
 // Interfaces importadas del servicio
 
@@ -93,7 +92,6 @@ export class Admin implements OnInit {
         private messageService: MessageService,
         private credencialService: CredencialService,
         private excelGeneratorService: ExcelGeneratorService,
-        private authService: AuthService,
         private router: Router,
         private confirmationService: ConfirmationService
     ) {
@@ -347,6 +345,14 @@ export class Admin implements OnInit {
             });
     }
 
+    gestionarTipos() {
+        this.tiposDialog = true;
+    }
+
+    onTiposDialogClose() {
+        this.cargarTiposCuenta();
+    }
+
     private cargarTiposCuenta() {
         this.credencialService.obtenerTipoCuentas().subscribe({
             next: (response) => {
@@ -377,13 +383,5 @@ export class Admin implements OnInit {
             const control = this.credencialForm.get(key);
             control?.markAsTouched();
         });
-    }
-
-    gestionarTipos() {
-        this.tiposDialog = true;
-    }
-
-    onTiposDialogClose() {
-        this.cargarTiposCuenta();
     }
 }

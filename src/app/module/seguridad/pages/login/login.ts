@@ -1,9 +1,10 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {NgClass} from '@angular/common';
-import {finalize, Subject, takeUntil} from 'rxjs';
-import {Router} from '@angular/router';
-import {AuthService} from '@/core/services/auth/AuthService';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { finalize, Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
+import { JWTService } from '@/core/security/JWTService';
+import { LoginService } from '@/core/services/seguridad/LoginService';
 
 interface LoginForm {
     username: string;
@@ -19,21 +20,25 @@ interface LoginForm {
 export class Login implements OnInit, OnDestroy {
     // <-- Implementa OnDestroy
     loginForm: FormGroup;
+    jwtService = inject(JWTService);
     isLoading = false;
     errorMessage = '';
     showError = false;
-
+    private loginService = inject(LoginService);
     // Creamos un Subject que actuará como señal para desuscribirnos
     private destroy$ = new Subject<void>();
 
-    constructor(private authService: AuthService, private router: Router) {
-    }
+    constructor(private router: Router) {}
 
     ngOnInit(): void {
-        // Si ya está logueado, redirige al dashboard
-        if (this.authService.isLoggedIn()) {
-            this.router.navigate(['/']); // o '/dashboard' según tu app
+        // Si ya existe un token y no ha expirado, redirige al dashboard
+        const token = this.jwtService.getToken();
+
+        if (token && !this.jwtService.isTokenExpired(token)) {
+            this.router.navigate(['/integra']);
+            return;
         }
+
         this.loginForm = new FormGroup({
             username: new FormControl(null, [Validators.required]),
             password: new FormControl(null, [Validators.required, Validators.minLength(6)])
@@ -45,20 +50,23 @@ export class Login implements OnInit, OnDestroy {
             this.isLoading = true;
             this.showError = false;
 
-            this.authService
+            this.loginService
                 .login(this.loginForm.value)
-                .pipe(// La magia ocurre aquí: la suscripción se cerrará automáticamente
-                    // cuando el Observable 'destroy$' emita un valor.
-                    takeUntil(this.destroy$), finalize(() => {
+                .pipe(
+                    takeUntil(this.destroy$),
+                    finalize(() => {
                         this.isLoading = false;
-                    }))
+                    })
+                )
                 .subscribe({
                     next: (response) => {
                         console.log('Inicio de sesión exitoso:', response);
                         this.showError = false;
                         this.loginForm.reset();
-                        this.router.navigate(['/']);
-                    }, error: (error) => {
+                        this.router.navigate(['/integra']);
+                    },
+                    error: (error) => {
+                        debugger;
                         this.showError = true;
                         if (error.status === 401) {
                             this.errorMessage = 'Credenciales inválidas. Verifica tu usuario y contraseña.';

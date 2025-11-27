@@ -1,371 +1,412 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { TitleComponent } from '@/shared/component/title/title.component';
-import { RolService } from '@/module/rol-admin/service/rol.service';
-
-export interface Rol {
-    id: number;
-    nombre: string;
-    descripcion?: string;
-}
-
-interface Permiso {
-    id: number;
-    nombre: string;
-    asignado: boolean;
-}
-
-interface Submodulo {
-    id: number;
-    nombre: string;
-    permisos: Permiso[];
-}
-
-interface Modulo {
-    id: number;
-    nombre: string;
-    submodulos: Submodulo[];
-}
+import { Rol, RolService } from '@/module/rol-admin/service/rol.service';
+import { FormsModule } from '@angular/forms';
+import { Button } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
+import { NuevoRol } from '@/module/rol-admin/nuevo-rol/nuevo-rol';
+import { Modulo, modulosBase, Permiso, Submodulo } from '@/module/modulos';
+import { Accordion, AccordionContent, AccordionHeader, AccordionPanel } from 'primeng/accordion';
+import { SpinnerComponent } from '@/shared/component/spinner.component';
 
 @Component({
     selector: 'app-rol-admin',
     standalone: true,
-    imports: [CommonModule, TitleComponent, Tabs, TabList, Tab, TabPanels, TabPanel, ToastModule, TableModule],
-    providers: [MessageService],
+    imports: [CommonModule, TitleComponent, ToastModule, ConfirmDialogModule, TableModule, FormsModule, Button, Dialog, NuevoRol, Accordion, AccordionPanel, AccordionHeader, AccordionContent, SpinnerComponent],
+    providers: [MessageService, ConfirmationService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './rol-admin.html',
     styleUrls: ['./rol-admin.scss']
 })
 export class RolAdmin implements OnInit {
     roles = signal<Rol[]>([]);
-    loading = signal(false);
+    loadingRoles = signal(true);
+    loadingPermisos = signal(false);
     selectedRol = signal<Rol | null>(null);
     modulos = signal<Modulo[]>([]);
+    modoEdicion = signal(false);
+    modoEdicionNombre = signal(false);
+    mostrarDialogoNuevoRol = false;
+    mostrarModalPermisos = false;
+    private nombreOriginal = '';
+    private descripcionOriginal = '';
 
-    Math = Math;
-    modulosBase: Modulo[] = [
-        {
-            id: 28,
-            nombre: 'Generales',
-            submodulos: [
-                {
-                    id: 29,
-                    nombre: 'Generales',
-                    permisos: [
-                        {
-                            id: 28,
-                            nombre: 'Consultar generales de unidad',
-                            asignado: false
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 1,
-            nombre: 'Gestión RRHH',
-            submodulos: [
-                {
-                    id: 2,
-                    nombre: 'Empleados',
-                    permisos: [
-                        { id: 1, nombre: 'Consultar empleados', asignado: false },
-                        { id: 2, nombre: 'Crear empleados', asignado: false },
-                        { id: 3, nombre: 'Editar empleados', asignado: false },
-                        { id: 4, nombre: 'Exportar empleados', asignado: false },
-                        { id: 5, nombre: 'Visualizar indicadores', asignado: false }
-                    ]
-                },
-                {
-                    id: 8,
-                    nombre: 'Asistencia',
-                    permisos: [
-                        { id: 6, nombre: 'Consultar asistencia', asignado: false },
-                        { id: 7, nombre: 'Restringir consulta a supervisor', asignado: false },
-                        { id: 8, nombre: 'Exportar asistencia', asignado: false },
-                        { id: 9, nombre: 'Agregar registro', asignado: false },
-                        { id: 10, nombre: 'Editar registro', asignado: false }
-                    ]
-                },
-                {
-                    id: 14,
-                    nombre: 'Configuración OpenTime',
-                    permisos: [
-                        { id: 11, nombre: 'Consultar indicadores', asignado: false },
-                        { id: 12, nombre: 'Editar tiempo de compensación', asignado: false },
-                        { id: 13, nombre: 'Autorizar configuraciones', asignado: false },
-                        { id: 14, nombre: 'Editar uso de camara', asignado: false }
-                    ]
-                },
-                {
-                    id: 19,
-                    nombre: 'Compensaciones asignadas',
-                    permisos: [
-                        { id: 15, nombre: 'Consultar compensaciones', asignado: false },
-                        { id: 16, nombre: 'Exportar compensaciones', asignado: false }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 23,
-            nombre: 'Infraestructura TI',
-            submodulos: [
-                {
-                    id: 24,
-                    nombre: 'Servidor',
-                    permisos: [
-                        { id: 17, nombre: 'Monitoreo de caché', asignado: false }
-                    ]
-                },
-                {
-                    id: 26,
-                    nombre: 'Redes',
-                    permisos: [
-                        { id: 18, nombre: 'Gestionar redes', asignado: false }
-                    ]
-                },
-                {
-                    id: 27,
-                    nombre: 'Soporte Técnico',
-                    permisos: [
-                        { id: 19, nombre: 'Crear tickets', asignado: false },
-                        { id: 20, nombre: 'Resolver tickets', asignado: false },
-                        { id: 21, nombre: 'Ver historial', asignado: false }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 32,
-            nombre: 'Administración',
-            submodulos: [
-                {
-                    id: 33,
-                    nombre: 'Usuarios',
-                    permisos: [
-                        { id: 22, nombre: 'Crear usuarios', asignado: false },
-                        { id: 23, nombre: 'Editar usuarios', asignado: false },
-                        { id: 24, nombre: 'Desactivar usuarios', asignado: false },
-                        { id: 25, nombre: 'Resetear contraseñas', asignado: false }
-                    ]
-                },
-                {
-                    id: 38,
-                    nombre: 'Roles y Permisos',
-                    permisos: [
-                        { id: 26, nombre: 'Gestionar roles', asignado: false },
-                        { id: 27, nombre: 'Asignar permisos', asignado: false }
-                    ]
-                }
-            ]
-        }
-    ];
-
-    private rolService = inject(RolService);
-    private messageService = inject(MessageService);
+    // Servicios
+    private readonly rolService = inject(RolService);
+    private readonly messageService = inject(MessageService);
+    private readonly confirmationService = inject(ConfirmationService);
 
     ngOnInit() {
         this.cargarRoles();
     }
 
+    // ==========================================
+    // SELECCIÓN Y CARGA
+    // ==========================================
+
     selectRol(rol: Rol) {
-        if (this.selectedRol()?.id === rol.id) {
-            this.selectedRol.set(null);
-            this.modulos.set([]);
-        } else {
-            this.selectedRol.set(rol);
-            this.cargarPermisosPorRol(rol.id);
-        }
+        this.mostrarModalPermisos = true;
+        this.selectedRol.set(rol);
+        this.modoEdicion.set(false);
+        this.cargarPermisosPorRol(rol.id);
     }
 
-    cargarPermisosPorRol(id: number) {
-        this.loading.set(true);
+    togglePermiso(permiso: Permiso, submodulo: Submodulo, modulo: Modulo) {
+        if (!this.modoEdicion()) return;
 
-        this.rolService.obtenerPermisosPorRol(id).subscribe({
-            next: (response) => {
-                // Extraer solo los IDs de los permisos retornados por el API
-                const permisosAsignados = response.data.map((permiso) => permiso.id);
+        const nuevoEstado = !permiso.asignado;
 
-                // Clonar la estructura base de módulos
-                const modulosConEstado: Modulo[] = JSON.parse(JSON.stringify(this.modulosBase));
+        // Actualización atómica: Permiso -> Submódulo -> Módulo
+        this.updateModulos(modulo.id, (m) => this.actualizarEstadoCascada(m, submodulo.id, permiso.id, nuevoEstado));
+    }
 
-                // Marcar como asignados los permisos que están en el array
-                modulosConEstado.forEach((modulo) => {
-                    modulo.submodulos.forEach((submodulo) => {
-                        submodulo.permisos.forEach((permiso) => {
-                            permiso.asignado = permisosAsignados.includes(permiso.id);
-                        });
-                    });
-                });
+    // ==========================================
+    // LÓGICA DE PERMISOS OPTIMIZADA ⚡
+    // ==========================================
 
-                this.modulos.set(modulosConEstado);
-                this.loading.set(false);
-            },
-            error: (error) => {
-                console.error('Error al cargar permisos del rol:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error al Cargar Permisos',
-                    detail: 'No se pudieron obtener los permisos del rol seleccionado',
-                    life: 4000
-                });
-                this.loading.set(false);
+    toggleTodosPermisos(submodulo: Submodulo, modulo: Modulo) {
+        if (!this.modoEdicion()) return;
 
-                // En caso de error, mostrar estructura vacía
-                this.modulos.set(JSON.parse(JSON.stringify(this.modulosBase)));
+        const nuevoEstado = !this.todosPermisosSeleccionados(submodulo);
+
+        this.updateModulos(modulo.id, (m) => {
+            // 1. Actualizar Submódulo y sus permisos
+            const submodulosActualizados = m.submodulos.map((sm) => {
+                if (sm.id === submodulo.id) {
+                    return {
+                        ...sm,
+                        asignado: nuevoEstado, // Si selecciono todos, el submódulo se asigna automáticamente
+                        permisos: sm.permisos.map((p) => ({ ...p, asignado: nuevoEstado }))
+                    };
+                }
+                return sm;
+            });
+
+            // 2. Recalcular Módulo basado en los nuevos submódulos
+            const moduloAsignado = submodulosActualizados.some((sm) => sm.asignado);
+
+            return {
+                ...m,
+                asignado: moduloAsignado,
+                submodulos: submodulosActualizados
+            };
+        });
+    }
+
+    toggleTodosPermisosModulo(modulo: Modulo) {
+        if (!this.modoEdicion()) return;
+
+        const nuevoEstado = !this.todosPermisosModuloSeleccionados(modulo);
+
+        this.updateModulos(modulo.id, (m) => ({
+            ...m,
+            asignado: nuevoEstado,
+            submodulos: m.submodulos.map((sm) => ({
+                ...sm,
+                asignado: nuevoEstado,
+                permisos: sm.permisos.map((p) => ({ ...p, asignado: nuevoEstado }))
+            }))
+        }));
+    }
+
+    guardarPermisos() {
+        const rol = this.selectedRol();
+        if (!rol) return;
+
+        // Ahora obtenerPermisosAsignados es pura recolección, sin lógica de negocio
+        const permisosAsignados = this.obtenerPermisosAsignados();
+
+        this.rolService.actualizarPermisosRol(rol.id, permisosAsignados).subscribe({
+            next: () => {
+                this.modoEdicion.set(false);
+                this.showSuccess('Permisos Guardados', `Los permisos del rol "${rol.nombre}" se han actualizado correctamente`);
             }
         });
     }
 
-    togglePermiso(permiso: Permiso, submodulo: Submodulo, modulo: Modulo) {
-        const nuevoEstado = !permiso.asignado;
-
-        this.modulos.update((currentModules) => {
-            return currentModules.map((m) => {
-                if (m.id !== modulo.id) return m;
-
-                return {
-                    ...m,
-                    submodulos: m.submodulos.map((sm) => {
-                        if (sm.id !== submodulo.id) return sm;
-
-                        return {
-                            ...sm,
-                            permisos: sm.permisos.map((p) => {
-                                if (p.id !== permiso.id) return p;
-                                return { ...p, asignado: nuevoEstado };
-                            })
-                        };
-                    })
-                };
-            });
-        });
-
-        const accion = nuevoEstado ? 'habilitado' : 'deshabilitado';
-
-        this.messageService.add({
-            severity: nuevoEstado ? 'success' : 'info',
-            summary: 'Permiso Actualizado',
-            detail: `"${permiso.nombre}" ${accion} en ${modulo.nombre} → ${submodulo.nombre}`,
-            life: 3000
-        });
-    }
-
-    // Método para seleccionar/deseleccionar todos los permisos de un submódulo
-    toggleTodosPermisos(submodulo: Submodulo, modulo: Modulo) {
-        const todosSeleccionados = this.todosPermisosSeleccionados(submodulo);
-        const nuevoEstado = !todosSeleccionados;
-
-        this.modulos.update((currentModules) => {
-            return currentModules.map((m) => {
-                if (m.id !== modulo.id) return m;
-
-                return {
-                    ...m,
-                    submodulos: m.submodulos.map((sm) => {
-                        if (sm.id !== submodulo.id) return sm;
-
-                        return {
-                            ...sm,
-                            permisos: sm.permisos.map((p) => ({
-                                ...p,
-                                asignado: nuevoEstado
-                            }))
-                        };
-                    })
-                };
-            });
-        });
-
-        const accion = nuevoEstado ? 'habilitados' : 'deshabilitados';
-        const cantidad = submodulo.permisos.length;
-
-        this.messageService.add({
-            severity: nuevoEstado ? 'success' : 'info',
-            summary: 'Permisos Actualizados',
-            detail: `${cantidad} permisos ${accion} en ${submodulo.nombre}`,
-            life: 3000
-        });
-    }
-
-    // Verifica si todos los permisos del submódulo están seleccionados
+    // Helpers de vista (Template)
     todosPermisosSeleccionados(submodulo: Submodulo): boolean {
         return submodulo.permisos.length > 0 && submodulo.permisos.every((p) => p.asignado);
     }
 
-    // Verifica si algunos (pero no todos) los permisos están seleccionados
     algunosPermisosSeleccionados(submodulo: Submodulo): boolean {
-        const seleccionados = submodulo.permisos.filter((p) => p.asignado).length;
-        return seleccionados > 0 && seleccionados < submodulo.permisos.length;
+        // Usar los flags para evitar conteos si no es necesario
+        if (!submodulo.asignado) return false;
+        const count = submodulo.permisos.filter((p) => p.asignado).length;
+        return count > 0 && count < submodulo.permisos.length;
     }
 
-    // ========== MÉTODOS DE CONTEO ==========
+    // ==========================================
+    // RECOLECCIÓN DE DATOS (GUARDADO)
+    // ==========================================
+
+    todosPermisosModuloSeleccionados(modulo: Modulo): boolean {
+        return modulo.submodulos.every((sm) => this.todosPermisosSeleccionados(sm));
+    }
+
+    algunosPermisosModuloSeleccionados(modulo: Modulo): boolean {
+        if (!modulo.asignado) return false;
+        // Lógica simplificada visual
+        const totalPermisos = modulo.submodulos.reduce((total, sm) => total + sm.permisos.length, 0);
+        const activos = this.contarPermisosEnModulo(modulo);
+        return activos > 0 && activos < totalPermisos;
+    }
+
+    // ==========================================
+    // HELPERS Y UTILIDADES
+    // ==========================================
 
     contarPermisosActivos(): number {
-        return this.modulos().reduce((total, modulo) => {
-            return (
-                total +
-                modulo.submodulos.reduce((subTotal, submodulo) => {
-                    return subTotal + submodulo.permisos.filter((p) => p.asignado).length;
-                }, 0)
-            );
-        }, 0);
+        return this.modulos().reduce((acc, m) => acc + this.contarPermisosEnModulo(m), 0);
     }
 
-    contarPermisosActivosModulo(modulo: Modulo): number {
-        const estadoModulo = this.modulos().find((m) => m.id === modulo.id);
-        if (!estadoModulo) return 0;
-
-        return estadoModulo.submodulos.reduce((total, submodulo) => {
-            return total + submodulo.permisos.filter((p) => p.asignado).length;
-        }, 0);
-    }
-
-    contarTotalPermisosModulo(modulo: Modulo): number {
-        return modulo.submodulos.reduce((total, submodulo) => {
-            return total + submodulo.permisos.length;
-        }, 0);
-    }
-
-    // CORREGIDO: Ahora cuenta directamente desde el submódulo recibido
+    // Método faltante agregado
     contarPermisosActivosSubmodulo(submodulo: Submodulo): number {
         return submodulo.permisos.filter((p) => p.asignado).length;
     }
 
-    getPorcentajeModulo(modulo: Modulo): number {
-        const total = this.contarTotalPermisosModulo(modulo);
-        const activos = this.contarPermisosActivosModulo(modulo);
-        return total > 0 ? Math.round((activos / total) * 100) : 0;
-    }
-
-    getPorcentajeSubmodulo(submodulo: Submodulo): number {
-        const total = submodulo.permisos.length;
-        const activos = this.contarPermisosActivosSubmodulo(submodulo);
-        return total > 0 ? Math.round((activos / total) * 100) : 0;
-    }
-
     cargarRoles() {
-        this.loading.set(true);
+        this.loadingRoles.set(true);
         this.rolService.obtenerRoles().subscribe({
-            next: (response) => {
-                this.roles.set(response.data);
-                this.loading.set(false);
+            next: (res) => {
+                this.roles.set(res.data);
+                this.loadingRoles.set(false);
             },
-            error: (error) => {
-                console.error('Error al cargar roles:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error al Cargar',
-                    detail: 'No se pudieron obtener los roles del sistema',
-                    life: 4000
-                });
-                this.loading.set(false);
+            error: () => this.loadingRoles.set(false)
+        });
+    }
+
+    editarRol(rol: Rol) {
+        if (rol.rolDefault) {
+            this.showWarning('Acción No Permitida', 'No se puede editar un rol protegido');
+            return;
+        }
+        this.selectedRol.set(rol);
+        this.cargarPermisosPorRol(rol.id);
+        this.modoEdicion.set(true);
+        this.showInfo('Modo Edición', `Editando: ${rol.nombre}`);
+    }
+
+    eliminarRol(rol: Rol) {
+        if (rol.rolDefault) {
+            this.showWarning('Acción No Permitida', 'No se puede eliminar un rol protegido');
+            return;
+        }
+        this.confirmationService.confirm({
+            message: '¿Eliminar rol y revocar permisos permanentemente?',
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Sí, eliminar',
+            acceptButtonStyleClass: 'p-button-danger',
+            accept: () => this.confirmarEliminacionRol(rol)
+        });
+    }
+
+    editarNombreDescripcion() {
+        const rol = this.selectedRol();
+        if (!rol) return;
+        this.nombreOriginal = rol.nombre;
+        this.descripcionOriginal = rol.descripcion || '';
+        this.modoEdicionNombre.set(true);
+    }
+
+    guardarNombreDescripcion() {
+        const rol = this.selectedRol();
+        if (!rol) return;
+        this.rolService.actualizarNombreRol(rol.id, { nombre: rol.nombre, descripcion: rol.descripcion }).subscribe({
+            next: () => {
+                this.showSuccess('Guardado', 'Información actualizada');
+                this.modoEdicionNombre.set(false);
             }
         });
+    }
+
+    cancelarEdicionNombre() {
+        const rol = this.selectedRol();
+        if (!rol) return;
+        rol.nombre = this.nombreOriginal;
+        rol.descripcion = this.descripcionOriginal;
+        this.modoEdicionNombre.set(false);
+    }
+
+    cancelarEdicionPermisos() {
+        const rol = this.selectedRol();
+        if (!rol) return;
+        this.modoEdicion.set(false);
+        this.cargarPermisosPorRol(rol.id);
+        this.showInfo('Cancelado', 'Cambios revertidos');
+    }
+
+    // ==========================================
+    // GESTIÓN CRUD DE ROLES (Sin cambios mayores)
+    // ==========================================
+
+    // Nuevo Rol
+    crearNuevoRol() {
+        this.mostrarDialogoNuevoRol = true;
+    }
+
+    cancelarCreacionRol() {
+        this.mostrarDialogoNuevoRol = false;
+    }
+
+    manejarRolAgregado(nuevoRol: Rol) {
+        this.mostrarDialogoNuevoRol = false;
+        this.roles.update((prev) => [...prev, nuevoRol]);
+    }
+
+    private cargarPermisosPorRol(id: number) {
+        this.loadingPermisos.set(true);
+
+        this.rolService.obtenerPermisosPorRol(id).subscribe({
+            next: (response) => {
+                // O(1) Lookup Set
+                const permisosAsignados = new Set(response.data.map((p) => p.id));
+                const modulosConEstado = this.mapearPermisosAModulos(permisosAsignados);
+                this.modulos.set(modulosConEstado);
+                this.loadingPermisos.set(false);
+            },
+            error: () => {
+                this.modulos.set(this.clonarModulosBase());
+                this.loadingPermisos.set(false);
+            }
+        });
+    }
+
+    /**
+     * Núcleo de la optimización:
+     * Actualiza el permiso específico y recalcula los flags del padre (Submódulo)
+     * y del abuelo (Módulo) en el mismo ciclo de ejecución.
+     */
+    private actualizarEstadoCascada(modulo: Modulo, submoduloId: string, permisoId: string, nuevoEstado: boolean): Modulo {
+        // 1. Actualizar Submódulos
+        const submodulosActualizados = modulo.submodulos.map((sm) => {
+            if (sm.id === submoduloId) {
+                // a. Actualizar lista de permisos
+                const permisosActualizados = sm.permisos.map((p) => (p.id === permisoId ? { ...p, asignado: nuevoEstado } : p));
+
+                // b. Calcular estado del submódulo localmente (Optimization)
+                const tienePermisosActivos = permisosActualizados.some((p) => p.asignado);
+
+                return {
+                    ...sm,
+                    asignado: tienePermisosActivos,
+                    permisos: permisosActualizados
+                };
+            }
+            return sm;
+        });
+
+        // 2. Calcular estado del Módulo basado en los nuevos submódulos
+        const moduloAsignado = submodulosActualizados.some((sm) => sm.asignado);
+
+        return {
+            ...modulo,
+            asignado: moduloAsignado,
+            submodulos: submodulosActualizados
+        };
+    }
+
+    private updateModulos(moduloId: string, updateFn: (modulo: Modulo) => Modulo) {
+        this.modulos.update((modulos) => modulos.map((m) => (m.id === moduloId ? updateFn(m) : m)));
+    }
+
+    private obtenerPermisosAsignados(): string[] {
+        const permisos: string[] = [];
+
+        // Confiamos en los flags 'asignado' que mantenemos sincronizados en tiempo real
+        this.modulos().forEach((modulo) => {
+            if (modulo.asignado && modulo.permisoAcceso) {
+                permisos.push(modulo.permisoAcceso);
+            }
+
+            if (modulo.asignado) {
+                // Solo iterar submódulos si el módulo está activo
+                modulo.submodulos.forEach((submodulo) => {
+                    if (submodulo.asignado) {
+                        permisos.push(submodulo.id); // Guardar ID Submódulo
+
+                        // Guardar Permisos individuales
+                        submodulo.permisos.forEach((permiso) => {
+                            if (permiso.asignado) {
+                                permisos.push(permiso.id);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        return permisos;
+    }
+
+    // Mapeo inicial desde backend
+    private mapearPermisosAModulos(permisosAsignados: Set<string>): Modulo[] {
+        return this.clonarModulosBase().map((modulo) => {
+            // 1. Mapear submódulos primero para saber si están activos
+            const submodulosMapeados = modulo.submodulos.map((submodulo) => {
+                const permisosMapeados = submodulo.permisos.map((permiso) => ({
+                    ...permiso,
+                    asignado: permisosAsignados.has(permiso.id)
+                }));
+
+                // El submódulo está asignado si el backend lo dice O si tiene hijos asignados
+                const asignado = permisosAsignados.has(submodulo.id) || permisosMapeados.some((p) => p.asignado);
+
+                return {
+                    ...submodulo,
+                    asignado: asignado,
+                    permisos: permisosMapeados
+                };
+            });
+
+            // 2. Determinar estado del módulo
+            const moduloAsignado = (modulo.permisoAcceso && permisosAsignados.has(modulo.permisoAcceso)) || submodulosMapeados.some((sm) => sm.asignado);
+
+            return {
+                ...modulo,
+                asignado: !!moduloAsignado,
+                submodulos: submodulosMapeados
+            };
+        });
+    }
+
+    private clonarModulosBase(): Modulo[] {
+        return JSON.parse(JSON.stringify(modulosBase));
+    }
+
+    private contarPermisosEnModulo(modulo: Modulo): number {
+        return modulo.submodulos.reduce((acc, sm) => acc + sm.permisos.filter((p) => p.asignado).length, 0);
+    }
+
+    private confirmarEliminacionRol(rol: Rol) {
+        this.rolService.eliminarRol(rol.id).subscribe({
+            next: () => {
+                this.roles.update((r) => r.filter((x) => x.id !== rol.id));
+                if (this.selectedRol()?.id === rol.id) this.resetSelection();
+                this.showSuccess('Rol Eliminado', 'Operación exitosa');
+            }
+        });
+    }
+
+    private resetSelection() {
+        this.selectedRol.set(null);
+        this.modulos.set([]);
+        this.modoEdicion.set(false);
+    }
+
+    // Mensajes
+    private showSuccess(summary: string, detail: string) {
+        this.messageService.add({ severity: 'success', summary, detail, life: 3000 });
+    }
+    private showInfo(summary: string, detail: string) {
+        this.messageService.add({ severity: 'info', summary, detail, life: 3000 });
+    }
+    private showWarning(summary: string, detail: string) {
+        this.messageService.add({ severity: 'warn', summary, detail, life: 4000 });
     }
 }

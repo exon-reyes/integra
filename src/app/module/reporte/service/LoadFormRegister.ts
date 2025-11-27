@@ -70,7 +70,7 @@ export class LoadFormRegister {
             map((response) => response.data),
             finalize(() => this.cargandoUnidades.set(false))
         );
-        this._areas$ = this.areaService.obtenerAreas({ reportes: true}).pipe(
+        this._areas$ = this.areaService.obtenerAreas({ reportes: true }).pipe(
             map((response) => response.data),
             finalize(() => this.cargandoAreas.set(false))
         );

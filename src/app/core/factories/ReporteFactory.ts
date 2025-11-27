@@ -14,7 +14,7 @@ export interface ReporteCreateRequest {
     descripcion: string;
     publicar: boolean;
     checklist: string;
-    idDepartamentoGenera:number;
+    idDepartamentoGenera: number;
     archivo: File;
 }
 @Injectable({

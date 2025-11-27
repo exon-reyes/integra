@@ -1,0 +1,8 @@
+<p-select
+    (onChange)="selectedZona.emit($event.value)"
+    [options]="zonas"
+    filter="true"
+    filterBy="nombre"
+    optionLabel="nombre" placeholder="Seleccionar zona"
+    showClear="true" class="w-full">
+</p-select>

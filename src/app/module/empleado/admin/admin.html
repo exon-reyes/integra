@@ -1,11 +1,11 @@
 <app-title
+    description="Consulta la información básica de los colaboradores"
     iconClass="isc i-member"
-    title="Catálago de Colaboradores"
-    description="Consulta la información básica de los colaboradores"/>
-<!-- Minimalist and modern employee management UI -->
-<div class="mt-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+    title="Catálago de Colaboradores"/>
+
+<div *hasPermission="Autoridades.VER_INDICADORES_EMPLEADOS" class="mt-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4">
     <div
-        class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        class="bg-white shadow rounded-lg p-4 flex items-center gap-4 ">
         <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
             <i class="pi pi-users text-blue-600 text-lg"></i>
         </div>
@@ -15,7 +15,7 @@
         </div>
     </div>
     <div
-        class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        class="bg-white shadow border-indigo-200 rounded-lg p-4 flex items-center gap-4">
         <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
             <i class="pi pi-users text-indigo-600 text-lg"></i>
         </div>
@@ -25,7 +25,7 @@
         </div>
     </div>
     <div
-        class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg">
+        class="bg-white shadow rounded-lg p-4 flex items-center gap-4 ">
         <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm">
             <i class="pi pi-users text-red-600 text-lg"></i>
         </div>
@@ -35,7 +35,7 @@
         </div>
     </div>
 </div>
-<p-panel [collapsed]="false" [toggleable]="true" header="Filtros" class="mb-1">
+<p-panel [collapsed]="false" [toggleable]="true" class="my-1" header="Filtros">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
@@ -81,23 +81,33 @@
         <div class="flex gap-2">
             <p-button (onClick)="sincronizar()" icon="pi pi-sync" label="Sincronizar" severity="info" size="small"
                       styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
-            <p-button (onClick)="exportarExcel()" icon="pi pi-file-excel" label="Exportar Excel" severity="success" size="small"
+            <p-button (onClick)="exportarExcel()" *hasPermission="Autoridades.EXPORTAR_EMPLEADOS"
+                      icon="pi pi-file-excel" label="Exportar Excel" severity="success"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button (onClick)="imprimir()" *hasPermission="Autoridades.EXPORTAR_EMPLEADOS" icon="pi pi-print"
+                      label="Imprimir" severity="secondary"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button *ngIf="puedeUsarFiltroAvanzado" (onClick)="mostrarFiltroAvanzado()" [icon]="filtroActivo ? 'pi pi-filter-fill' : 'pi pi-filter'"
+                      [label]="filtroActivo ? 'Filtro Activo' : 'Filtro Avanzado'" severity="secondary"
+                      size="small"
                       styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
         </div>
     </div>
 
     <p-table #dt
              [globalFilterFields]="['codigoEmpleado','puestoNombre','nombreCompleto','unidadNombreCompleto','estatus']"
-             paginator="true"
-             [showCurrentPageReport]="true"
-             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
-             [rows]="200"
-             scrollable="true"
-             [tableStyle]="{ 'min-width': '50rem' }"
              [rowsPerPageOptions]="[200,400,500,1000]"
+             [rows]="200"
+             [showCurrentPageReport]="true"
+             [tableStyle]="{ 'min-width': '50rem' }"
              [value]="empleados()"
              class="border-0"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
+             paginator="true"
              scrollHeight="calc(100vh - 428px)"
+             scrollable="true"
              size="small">
         <ng-template #header>
             <tr class="bg-gray-50">
@@ -122,6 +132,8 @@
                     <p-sortIcon field="estatus"/>
                     Estado
                 </th>
+                <th>Fecha alta</th>
+                <th>Fecha baja</th>
             </tr>
         </ng-template>
         <ng-template #body let-empleado let-rowIndex="rowIndex">
@@ -148,7 +160,39 @@
               }
           </span>
                 </td>
+                <td style="width:6%">{{ empleado.fechaAlta }}</td>
+                <td style="width:6%">{{ empleado.fechaBaja }}</td>
             </tr>
         </ng-template>
     </p-table>
 </div>
+
+<p-dialog [(visible)]="mostrarModal" [closable]="true" [draggable]="false" [modal]="true" [resizable]="false"
+          header="Filtro Avanzado" styleClass="w-96">
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Supervisor</label>
+            <p-select [(ngModel)]="supervisorSeleccionado" [options]="supervisores"
+                      appendTo="body" class="w-full"
+                      optionLabel="nombreCompleto"
+                      optionValue="id"
+                      placeholder="Seleccionar supervisor">
+            </p-select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
+            <p-select [(ngModel)]="zonaSeleccionada" [options]="zonas"
+                      appendTo="body" class="w-full"
+                      optionLabel="nombre"
+                      optionValue="id"
+                      placeholder="Seleccionar zona">
+            </p-select>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex gap-2 justify-end">
+            <p-button (onClick)="limpiarFiltros()" label="Limpiar" severity="secondary" size="small"></p-button>
+            <p-button (onClick)="aplicarFiltroAvanzado()" label="Aplicar" size="small"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>

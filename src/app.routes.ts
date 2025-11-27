@@ -1,84 +1,75 @@
 import { Routes } from '@angular/router';
-import { Documentation } from '@/pages/documentation/documentation';
 import { Dashboard } from '@/pages/dashboard/dashboard';
-import { Landing } from '@/pages/landing/landing';
-import { Notfound } from '@/pages/notfound/notfound';
 import { AppLayout } from '@/layout/component/app.layout';
-import ReporteRoutes from '@/routes/reporte.routes';
-import SistemasRoutes from '@/routes/sistemas.routes';
-import ColaboraRoutes from '@/routes/colabora.routes';
-import { RolePermissionGuard } from '@/core/guards/RolePermissionGuard';
+import { LoginGuard } from '@/core/security/LoginGuard';
+import { AuthGuard } from '@/core/security/AuthGuard';
+import { PermissionGuard } from '@/core/security/PermissionGuard';
+import { Autoridades } from '@/config/Autoridades';
 
 export const appRoutes: Routes = [
+    { path: '', canActivate: [LoginGuard], loadComponent: () => import('@/pages/landing/landing').then((value) => value.Landing) },
     {
-        path: '',
+        path: 'integra',
         component: AppLayout,
+        canActivate: [AuthGuard],
         children: [
             { path: '', component: Dashboard },
-            { path: 'colabora', children: ColaboraRoutes },
-            {
-                path: 'reporte',
-                children: ReporteRoutes
-            },
+            { path: 'general', loadChildren: () => import('./app/routes/general.routes') },
             {
                 path: 'empleado/admin',
                 loadComponent: () => import('./app/module/empleado/admin/admin').then((value) => value.Admin),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
+                canActivate: [PermissionGuard]
             },
             {
                 path: 'asistencia/admin',
+                loadComponent: () => import('@/module/checador/modulos/modulos').then((value) => value.Modulos),
+                canActivate: [PermissionGuard]
+            },
+            {
+                path: 'asistencia/consulta',
                 loadComponent: () => import('@/module/checador/admin/admin').then((value) => value.Admin),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
+                canActivate: [PermissionGuard]
+            },
+            {
+                path: 'asistencia/manual',
+                loadComponent: () => import('@/module/checador/registro-manual/registro-manual').then((value) => value.RegistroManualComponent),
+                canActivate: [PermissionGuard]
+            },
+            {
+                path: 'asistencia/exportar',
+                loadComponent: () => import('@/module/checador/incidencias-nomina/incidencias-nomina').then((value) => value.IncidenciasNomina),
+                canActivate: [PermissionGuard]
             },
             {
                 path: 'asistencia/compensacion',
                 loadComponent: () => import('@/module/checador/compensaciones/compensaciones').then((value) => value.Compensaciones),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
+                canActivate: [PermissionGuard]
             },
             {
                 path: 'asistencia/kioscos',
                 loadComponent: () => import('@/module/checador/admin-kiosco/admin-kiosco').then((value) => value.AdminKiosco),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
+                canActivate: [PermissionGuard]
             },
-            {
-                path: 'sucursal',
-                loadComponent: () => import('@/module/unidad/unidades').then((value) => value.Unidades),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
-            },
+
             {
                 path: 'credenciales/admin',
                 loadComponent: () => import('@/module/credencial/admin').then((value) => value.Admin),
-                canActivate: [RolePermissionGuard],
-                data: { permission: 'ADMIN' }
+                canActivate: [PermissionGuard],
+                data: { permission: Autoridades.CONSULTAR_CREDENCIALES }
             },
-            { path: 'roles/admin', loadComponent: () => import('@/module/rol-admin/rol-admin').then((value) => value.RolAdmin), canActivate: [RolePermissionGuard], data: { permission: 'ADMIN' } },
-
-            { path: 'sistemas', children: SistemasRoutes },
+            { path: 'roles/admin', loadComponent: () => import('@/module/rol-admin/rol-admin').then((value) => value.RolAdmin), canActivate: [PermissionGuard], data: { permission: 'CA' } },
             {
                 path: 'usuarios',
+                canActivate: [PermissionGuard],
+                data: { permission: Autoridades.VER_SUBMODULO_USUARIOS },
                 loadChildren: () => import('./app/routes/usuario.routes')
-            },
-            { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
-            {
-                path: 'documentation',
-                component: Documentation
-            },
-            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
+            }
         ]
     },
-    { path: 'landing', component: Landing },
-    { path: 'notfound', component: Notfound },
+    { path: 'notfound', loadComponent: () => import('@/pages/notfound').then((value) => value.Notfound) },
+    { path: 'auth', loadChildren: () => import('@/routes/auth.routes') },
     {
-        path: 'auth',
-        loadChildren: () => import('@/routes/auth.routes')
-    },
-    {
-        path: 'checador',
+        path: 'integra/checador',
         loadComponent: () => import('@/module/checador/app').then((value) => value.App)
     },
     { path: '**', redirectTo: '/notfound' }

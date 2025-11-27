@@ -144,11 +144,13 @@
                                 class="p-3 h-15 bg-blue-500 text-white font-semibold rounded-lg hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                             <i class="pi pi-sign-out mr-3"></i>Finalizar Jornada
                         </button>
-                        <button (click)="iniciarCapturaFoto('finalizarJornadaDeposito')"
-                                [disabled]="(!modoSinCamara() && !cameraPermissionGranted()) || isUploading() || isLoading()"
-                                class="p-3 h-15 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="pi pi-building mr-3"></i>Fin jornada por depósito
-                        </button>
+                        @if (tieneCompensacion()) {
+                            <button (click)="iniciarCapturaFoto('finalizarJornadaDeposito')"
+                                    [disabled]="(!modoSinCamara() && !cameraPermissionGranted()) || isUploading() || isLoading()"
+                                    class="p-3 h-15 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="pi pi-building mr-3"></i>Fin jornada por depósito
+                            </button>
+                        }
                     }
                     @if (!cameraPermissionGranted() && !modoSinCamara()) {
                         <p class="text-red-500 text-sm font-medium">Se requieren permisos de cámara</p>
@@ -220,10 +222,10 @@
     <button (click)="abrirModalConfiguracion()"
             class="fixed bottom-6 right-6 w-14 h-14 bg-slate-600 hover:bg-slate-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-40">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"></path>
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"></path>
         </svg>
     </button>
     <footer class="absolute bottom-4 w-full z-30">
@@ -255,141 +257,148 @@
     </div>
 }
 
-<!-- Modal de selección de unidad -->
-@if (mostrarModalUnidad()) {
-    <div class="fixed inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-50">
-        @defer (on viewport) {
-            <div class="bg-white p-6 rounded-2xl shadow-xl w-96 max-h-[80vh] flex flex-col gap-4">
-                <h3 class="text-xl font-bold text-slate-800 text-center">Seleccionar Unidad</h3>
-                <p class="text-slate-600 text-sm text-center">Selecciona la unidad donde realizarás el registro de
-                    asistencia.</p>
-                <div class="flex-1 overflow-y-auto">
-                    @if (isLoadingUnidades()) {
-                        <div class="text-center py-8">
-                            <div
-                                class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                            <p class="text-slate-600">Cargando unidades...</p>
-                        </div>
-                    } @else if (unidades().length > 0) {
-                        <div class="space-y-2">
-                            @for (kiosco of unidades(); track kiosco.id) {
-                                <button (click)="seleccionarUnidad(kiosco)"
-                                        [class]="unidadSeleccionada()?.id === kiosco.id ? 'bg-blue-100 border-blue-500' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'"
-                                        class="w-full p-3 border rounded-lg text-left transition">
-                                    <div class="font-semibold text-slate-800">{{ kiosco.nombreCompleto }}</div>
-                                </button>
-                            }
-                        </div>
-                    } @else {
-                        <div class="text-center py-8">
-                            <svg class="w-12 h-12 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
-                            <p class="text-slate-600 font-medium">No hay unidades registradas</p>
-                            <p class="text-slate-500 text-sm mt-2">Contacte al administrador para configurar las
-                                unidades del kiosco.</p>
-                        </div>
-                    }
-                </div>
-                <div class="flex">
-                    <button (click)="guardarUnidadSeleccionada()" [disabled]="!unidadSeleccionada()"
-                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        Guardar
-                    </button>
-                </div>
-            </div>
-        } @placeholder {
-            <div class="bg-white p-6 rounded-2xl shadow-xl w-96 flex items-center justify-center">
-                <div class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-            </div>
-        }
-    </div>
-}
-
-<!-- Modal de configuración -->
-@if (mostrarModalConfiguracion()) {
-    <div class="fixed inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-xl text-center flex flex-col items-center gap-4">
-            <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <h2 class="text-xl font-semibold text-slate-800">Configuración</h2>
-            @if (!mostrarInputReset()) {
-                <div class="flex flex-col gap-3 w-full">
-                    <button (click)="sincronizarConfiguracion()" [disabled]="isLoading()"
-                        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        @if (isLoading()) {
-                            <svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        }
-                        Sincronizar
-                    </button>
-                    <button (click)="activarInputReset()"
-                            class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
-                        Reset
-                    </button>
-                    <button (click)="activarCodigoSinCamara()" [disabled]="isLoading()"
-                            class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        Sin Cámara
-                    </button>
-                    <button (click)="solicitarCodigoConfiguracion()" [disabled]="isLoading()"
-                            class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        Solicitar Código de Configuración
-                    </button>
-                    <button (click)="cerrarModalConfiguracion()"
-                            class="px-6 py-3 bg-slate-400 text-slate-900 font-semibold rounded-lg hover:bg-slate-500 transition">
-                        Cancelar
-                    </button>
-                </div>
-            } @else {
-                <div class="flex flex-col gap-4 w-full">
-                    <p class="text-slate-600 text-sm">Ingresa el código de reset (5 dígitos)</p>
-                    <input #resetInput type="text" [value]="codigoReset()" readonly maxlength="5"
-                           class="w-full px-4 py-3 text-center text-xl font-bold border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    @if (errorApi()) {
-                        <p class="text-red-600 font-semibold text-center text-sm">{{ errorApi() }}</p>
-                    }
-                    <div class="grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
-                        @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track n) {
-                            <button (click)="agregarDigitoReset(n)"
-                                    class="h-12 rounded-lg text-xl font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition">{{ n }}
-                            </button>
-                        }
-                        <button (click)="borrarDigitoReset()"
-                                class="h-12 rounded-lg text-sm font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition flex items-center justify-center">
-                            ←
-                        </button>
-                        <button (click)="agregarDigitoReset(0)"
-                                class="h-12 rounded-lg text-xl font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition">
-                            0
-                        </button>
-                        <button (click)="ejecutarReset()" [disabled]="codigoReset().length !== 5 || isLoadingReset()"
-                                class="h-12 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            @if (isLoadingReset()) {
-                                <svg class="animate-spin h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+@defer (when mostrarModalUnidad()) {
+    <!-- Modal de selección de unidad -->
+    @if (mostrarModalUnidad()) {
+        <div class="fixed inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-50">
+            @defer (on viewport) {
+                <div class="bg-white p-6 rounded-2xl shadow-xl w-96 max-h-[80vh] flex flex-col gap-4">
+                    <h3 class="text-xl font-bold text-slate-800 text-center">Seleccionar Unidad</h3>
+                    <p class="text-slate-600 text-sm text-center">Selecciona la unidad donde realizarás el registro de
+                        asistencia.</p>
+                    <div class="flex-1 overflow-y-auto">
+                        @if (isLoadingUnidades()) {
+                            <div class="text-center py-8">
+                                <div
+                                    class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                                <p class="text-slate-600">Cargando unidades...</p>
+                            </div>
+                        } @else if (unidades().length > 0) {
+                            <div class="space-y-2">
+                                @for (kiosco of unidades(); track kiosco.id) {
+                                    <button (click)="seleccionarUnidad(kiosco)"
+                                            [class]="unidadSeleccionada()?.id === kiosco.id ? 'bg-blue-100 border-blue-500' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'"
+                                            class="w-full p-3 border rounded-lg text-left transition">
+                                        <div class="font-semibold text-slate-800">{{ kiosco.nombreCompleto }}</div>
+                                    </button>
+                                }
+                            </div>
+                        } @else {
+                            <div class="text-center py-8">
+                                <svg class="w-12 h-12 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                 </svg>
-                            } @else {
-                                OK
-                            }
+                                <p class="text-slate-600 font-medium">No hay unidades registradas</p>
+                                <p class="text-slate-500 text-sm mt-2">Contacte al administrador para configurar las
+                                    unidades del kiosco.</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex">
+                        <button (click)="guardarUnidadSeleccionada()" [disabled]="!unidadSeleccionada()"
+                                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Guardar
                         </button>
                     </div>
-                    <button (click)="cerrarModalConfiguracion()"
-                            class="px-6 py-3 bg-slate-400 text-slate-900 font-semibold rounded-lg hover:bg-slate-500 transition">
-                        Cancelar
-                    </button>
+                </div>
+            } @placeholder {
+                <div class="bg-white p-6 rounded-2xl shadow-xl w-96 flex items-center justify-center">
+                    <div class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
                 </div>
             }
         </div>
-    </div>
+    }
+}
+<!-- Modal de configuración -->
+@defer (when mostrarModalConfiguracion()){
+    @if (mostrarModalConfiguracion()) {
+        <div class="fixed inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-50">
+            <div class="bg-white p-8 rounded-2xl shadow-xl text-center flex flex-col items-center gap-4">
+                <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <h2 class="text-xl font-semibold text-slate-800">Configuración</h2>
+                @if (!mostrarInputReset()) {
+                    <div class="flex flex-col gap-3 w-full">
+                        <button (click)="sincronizarConfiguracion()" [disabled]="isLoading()"
+                                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            @if (isLoading()) {
+                                <svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            }
+                            Sincronizar
+                        </button>
+                        <button (click)="activarInputReset()"
+                                class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                            Reset
+                        </button>
+                        <button (click)="activarCodigoSinCamara()" [disabled]="isLoading()"
+                                class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Sin Cámara
+                        </button>
+                        <button (click)="solicitarCodigoConfiguracion()" [disabled]="isLoading()"
+                                class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Solicitar Código de Configuración
+                        </button>
+                        <button (click)="cerrarModalConfiguracion()"
+                                class="px-6 py-3 bg-slate-400 text-slate-900 font-semibold rounded-lg hover:bg-slate-500 transition">
+                            Cancelar
+                        </button>
+                    </div>
+                } @else {
+                    <div class="flex flex-col gap-4 w-full">
+                        <p class="text-slate-600 text-sm">Ingresa el código de reset (5 dígitos)</p>
+                        <input #resetInput type="text" [value]="codigoReset()" readonly maxlength="5"
+                               class="w-full px-4 py-3 text-center text-xl font-bold border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @if (errorApi()) {
+                            <p class="text-red-600 font-semibold text-center text-sm">{{ errorApi() }}</p>
+                        }
+                        <div class="grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
+                            @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track n) {
+                                <button (click)="agregarDigitoReset(n)"
+                                        class="h-12 rounded-lg text-xl font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition">{{ n }}
+                                </button>
+                            }
+                            <button (click)="borrarDigitoReset()"
+                                    class="h-12 rounded-lg text-sm font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition flex items-center justify-center">
+                                ←
+                            </button>
+                            <button (click)="agregarDigitoReset(0)"
+                                    class="h-12 rounded-lg text-xl font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition">
+                                0
+                            </button>
+                            <button (click)="ejecutarReset()" [disabled]="codigoReset().length !== 5 || isLoadingReset()"
+                                    class="h-12 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                @if (isLoadingReset()) {
+                                    <svg class="animate-spin h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                } @else {
+                                    OK
+                                }
+                            </button>
+                        </div>
+                        <button (click)="cerrarModalConfiguracion()"
+                                class="px-6 py-3 bg-slate-400 text-slate-900 font-semibold rounded-lg hover:bg-slate-500 transition">
+                            Cancelar
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 }
 
 <!-- Modal de código sin cámara -->
@@ -424,12 +433,15 @@
                             class="h-12 rounded-lg text-xl font-bold bg-slate-100 text-gray-900 hover:bg-slate-200 transition">
                         0
                     </button>
-                    <button (click)="confirmarCodigoSinCamara()" [disabled]="codigoSinCamara().length !== 5 || isLoadingSinCamara()"
+                    <button (click)="confirmarCodigoSinCamara()"
+                            [disabled]="codigoSinCamara().length !== 5 || isLoadingSinCamara()"
                             class="h-12 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         @if (isLoadingSinCamara()) {
                             <svg class="animate-spin h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         } @else {
                             OK

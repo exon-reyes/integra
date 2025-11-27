@@ -1,17 +1,11 @@
-export interface Permiso {
-    id: number;
-    nombre: string;
-}
-
-export interface Rol {
-    id: number;
-    nombre: string;
-    permisos: Permiso[];
-}
+import { Rol } from '@/module/rol-admin/service/rol.service';
 
 export interface Usuario {
-    id: number;
-    nombre: string;
-    nombreCompleto: string;
-    rol: Rol;
+    id?: number;
+    nombre?: string;
+    email?: string;
+    activo?: boolean;
+    createAt?: Date;
+    roles?: Rol[];
+    permisos?: Array<string>;
 }

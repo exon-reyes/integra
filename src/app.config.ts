@@ -6,8 +6,8 @@ import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { authInterceptor } from '@/core/interceptors/seguridad/AuthInterceptor';
-import { ErrorResponseInterceptor } from '@/shared/interceptor/error-response.interceptor';
+import { authInterceptor } from '@/core/security/AuthInterceptor';
+import { ErrorResponseInterceptor } from '@/core/error-response.interceptor';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(withFetch(), withInterceptors([authInterceptor, ErrorResponseInterceptor])),
         provideAnimationsAsync(),
         provideBrowserGlobalErrorListeners(),
-        provideZoneChangeDetection({eventCoalescing: true}),
+        provideZoneChangeDetection({ eventCoalescing: true }),
         MessageService,
         ConfirmationService,
         providePrimeNG({
@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
                 dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
                 today: 'Hoy',
                 cancel: 'Cancelar',
-                apply:'Aplicar',
+                apply: 'Aplicar',
                 clear: 'Borrar',
                 reject: 'No',
                 choose: 'Seleccionar',

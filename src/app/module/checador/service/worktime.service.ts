@@ -7,7 +7,7 @@ import { distinctUntilChanged, switchMap, throttleTime } from 'rxjs/operators';
 import { Empleado } from '@/core/services/checador/Empleado';
 import { TipoPausa } from '@/core/services/checador/TipoPausa';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 
 @Injectable({
     providedIn: 'root'
@@ -72,4 +72,15 @@ export class WorktimeService {
         return this.http.post<ResponseData<any>>(`${this.apiUrl}/${endpoint}`, body);
     }
 
+    registroManual(registroData: {
+        empleadoId: number;
+        tipoAccion: 'iniciarJornada' | 'finalizarJornada' | 'finalizarJornadaDeposito' | 'iniciarPausa' | 'finalizarPausa';
+        pausa?: 'COMIDA' | 'OTRA';
+        hora: string;
+        observaciones: string;
+        unidadId: number;
+        unidadAsignadaId?: number;
+    }): Observable<ResponseData<any>> {
+        return this.http.post<ResponseData<any>>(`${this.apiUrl}/manual`, registroData);
+    }
 }

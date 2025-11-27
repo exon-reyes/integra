@@ -1,31 +1,29 @@
 <div class="flex items-center">
     <!-- Imagen con NgOptimizedImage -->
     @if (hasValidImage) {
-        <div class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm p-2.5 shrink-0">
+        <div
+            class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm p-2.5 shrink-0">
             <img
                 [ngSrc]="imageSrc"
-                alt="icon"
-                height="34"
-                width="34"
                 [priority]="priority"
-                class="w-full h-full object-contain">
+                alt="icon"
+                class="w-full h-full object-contain"
+                height="34"
+                width="34">
         </div>
-    }
-    <!-- Icono por clase CSS (SVG background) -->
-    @else if (hasValidIconClass) {
-        <div class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm p-2.5 shrink-0">
+    } @else if (hasValidIconClass) {
+        <div
+            class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm p-2.5 shrink-0">
             <span
+                [attr.aria-label]="title + ' icon'"
                 [class]="iconClass + ' w-full h-full !min-w-0 !min-h-0'"
-                role="img"
-                [attr.aria-label]="title + ' icon'"></span>
+                role="img"></span>
         </div>
-    }
-    <!-- Fallback - letra inicial -->
-    @else if (shouldShowFallback) {
+    } @else if (shouldShowFallback) {
         <span
+            [attr.aria-label]="title + ' initial'"
             class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white text-black text-2xl font-bold rounded-lg shadow-sm shrink-0"
-            role="img"
-            [attr.aria-label]="title + ' initial'">
+            role="img">
             {{ titleInitial }}
         </span>
     }

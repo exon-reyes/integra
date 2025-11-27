@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { of, tap } from 'rxjs';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { InfoBasicaEmpleado } from '@/models/organizacion/empleado';
 
 @Injectable({
@@ -16,6 +16,15 @@ export class EmpleadoService {
 
     constructor(private httpClient: HttpClient) {
         this.header = new HttpHeaders({ 'Content-Type': 'application/json' });
+    }
+
+    obtenerEmpleadosFiltrados(filtros?: any) {
+        if (!filtros || Object.keys(filtros).length === 0) {
+            return this.obtenerEmpleados();
+        }
+        debugger;
+        const params = new URLSearchParams(filtros).toString();
+        return this.httpClient.get<ResponseData<InfoBasicaEmpleado[]>>(`${this.apiUrl}/filtrados?${params}`, { headers: this.header });
     }
 
     obtenerEmpleados() {
@@ -35,6 +44,13 @@ export class EmpleadoService {
     obtenerSupervisores() {
         return this.httpClient.get<ResponseData<InfoBasicaEmpleado[]>>(`${this.apiUrl}/supervisores-activos`, { headers: this.header });
     }
+    exportarEmpleadosExcel(filtros: any) {
+        const params = new URLSearchParams(filtros).toString();
+        return this.httpClient.get(`${this.apiUrl}/export/excel?${params}`, {
+            responseType: 'blob'
+        });
+    }
+
     removeCache() {
         this.data = undefined as any;
         this.datSoloEmpleados = undefined as any;

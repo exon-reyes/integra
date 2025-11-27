@@ -1,15 +1,13 @@
-import {Injectable} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import { Injectable } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
 @Injectable()
 export class FormValidatorService {
-  constructor() {
-  }
+    constructor() {}
 
-  marcarFormulario(form: FormGroup): void {
-    Object.values(form.controls).forEach(control => {
-      control.markAsTouched();
-    });
-  }
-
+    marcarFormulario(form: FormGroup): void {
+        Object.values(form.controls).forEach((control) => {
+            control.markAsTouched();
+        });
+    }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AbstractService } from '@/shared/service/abstract-service';
+import { AbstractService } from '@/core/services/abstract-service';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { Observable } from 'rxjs';
 import { Puesto } from '@/models/empresa/puesto';
 

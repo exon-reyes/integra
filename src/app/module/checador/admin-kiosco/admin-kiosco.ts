@@ -43,9 +43,7 @@ export class AdminKiosco implements OnInit {
         return Math.round((this.kioscosConCamara() / total) * 100);
     });
     // Kioscos con tiempo de compensación
-    kioscosConCompensacion = computed(() => 
-        this.kioscos().filter(k => k.tiempoCompensacion && k.tiempoCompensacion !== '00:00:00').length
-    );
+    kioscosConCompensacion = computed(() => this.kioscos().filter((k) => k.tiempoCompensacion && k.tiempoCompensacion !== '00:00:00').length);
     private kioscoService = inject(KioscoConfigService);
     private readonly messageService = inject(MessageService);
 
@@ -159,13 +157,11 @@ export class AdminKiosco implements OnInit {
         const horas = this.horasTemp().toString().padStart(2, '0');
         const minutos = this.minutosTemp().toString().padStart(2, '0');
         const nuevoTiempo = `${horas}:${minutos}:00`;
-        
+
         this.kioscoService.actualizarCompensacion(kiosco.id, nuevoTiempo).subscribe({
             next: (response) => {
                 if (response.success) {
-                    this.kioscos.update(kioscos => 
-                        kioscos.map(k => k.id === kiosco.id ? { ...k, tiempoCompensacion: nuevoTiempo } : k)
-                    );
+                    this.kioscos.update((kioscos) => kioscos.map((k) => (k.id === kiosco.id ? { ...k, tiempoCompensacion: nuevoTiempo } : k)));
                     this.editandoCompensacion.set(null);
                     this.messageService.add({
                         severity: 'success',

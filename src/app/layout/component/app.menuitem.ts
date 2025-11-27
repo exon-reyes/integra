@@ -7,11 +7,12 @@ import { CommonModule } from '@angular/common';
 import { RippleModule } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
 import { LayoutService } from '../service/layout.service';
-import { HasPermissionDirective } from '@/shared/directive/has-permission.directive'; // Importación necesaria
+import { HasPermissionDirective } from '@/core/security/HasPermissionDirective';
 
 // Definición de la interfaz CustomMenuItem para el tipo correcto
 export interface CustomMenuItem extends MenuItem {
-    permission?: string;
+    permission?: string | string[];
+    permissionOperator?: 'AND' | 'OR';
     items?: CustomMenuItem[];
 }
 
@@ -58,8 +59,7 @@ export interface CustomMenuItem extends MenuItem {
             <!-- 🎯 3. Bucle Recursivo para Sub-menús (AQUÍ ESTÁ EL CAMBIO CRÍTICO) -->
             <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation">
                 <ng-template ngFor let-child let-i="index" [ngForOf]="item.items">
-                    <!-- 💡 ENVOLVEMOS CADA ELEMENTO HIJO CON LA DIRECTIVA *hasPermission -->
-                    <ng-container *hasPermission="child.permission">
+                    <ng-container *hasPermission="child.permission; operator: child.permissionOperator || 'OR'">
                         <!-- El li app-menuitem se crea solo si el permiso existe -->
                         <li app-menuitem [item]="child" [index]="i" [parentKey]="key" [class]="child['badgeClass']"></li>
                     </ng-container>

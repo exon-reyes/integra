@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { environment } from '@env/environment';
 import { Unidad } from '@/models/empresa/unidad';
 import { HorarioOperativo } from '@/models/empresa/horario-operativo';
-import { AbstractService } from '@/shared/service/abstract-service';
+import { AbstractService } from '@/core/services/abstract-service';
 
 @Injectable({
     providedIn: 'root'
@@ -22,6 +22,7 @@ export class UnidadService extends AbstractService {
     }
 
     obtenerUnidades(): Observable<ResponseData<Unidad[]>> {
+        // Verificar si los datos están en caché y aún son válidos
         const now = Date.now();
         if (this.data && this.cacheTimestamp && now - this.cacheTimestamp < this.cacheDurationMs) {
             return of(this.data);
@@ -72,6 +73,11 @@ export class UnidadService extends AbstractService {
         this.data = undefined;
         this.cacheTimestamp = undefined;
     }
+
+    obtenerUltimaFechaSincronizacion(): Date | undefined {
+        return this.cacheTimestamp ? new Date(this.cacheTimestamp) : undefined;
+    }
+
     private leerLocalStorage(): void {
         const data = localStorage.getItem('unidades');
         const timestamp = localStorage.getItem('unidades_timestamp');

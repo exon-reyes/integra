@@ -3,7 +3,11 @@ import { forkJoin } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { DatePipe } from '@angular/common';
 import { Button } from 'primeng/button';
-import { AsistenciaService, EmpleadoReporte, EmpleadoReporteRequest } from '@/core/services/asistencia/asistencia.service';
+import {
+    AsistenciaService,
+    EmpleadoReporte,
+    EmpleadoReporteRequest
+} from '@/core/services/asistencia/asistencia.service';
 import { FormsModule } from '@angular/forms';
 import { UnidadService } from '@/core/services/empresa/unidad.service';
 import { EmpleadoService } from '@/core/services/organizacion/empleado.service';
@@ -20,10 +24,14 @@ import { InfoBasicaEmpleado } from '@/models/organizacion/empleado';
 import { fechaISOString, obtenerFinDia } from '@/shared/util/date.util';
 import { Zona } from '@/models/ubicacion/zona';
 import { ZonaService } from '@/core/services/ubicacion/zona.service';
+import { JWTService } from '@/core/security/JWTService';
+import { Autoridades } from '@/config/Autoridades';
+import { InputText } from 'primeng/inputtext';
+import { SpinnerService } from '@/shared/service/spinner.service';
 
 @Component({
     selector: 'app-admin',
-    imports: [TableModule, DatePipe, Button, FormsModule, Dialog, Tooltip, Select, DatePicker, TitleComponent, Panel],
+    imports: [TableModule, DatePipe, Button, FormsModule, Dialog, Tooltip, Select, DatePicker, TitleComponent, Panel, InputText],
     templateUrl: './admin.html'
 })
 export class Admin implements OnInit {
@@ -41,6 +49,8 @@ export class Admin implements OnInit {
         fechaFin: '',
         empleados: [] as number[]
     };
+    supervisorSeleccionado: number | null = null;
+    filtroActivo = false;
     unidades = signal<Unidad[]>([]);
     puestos = signal<Puesto[]>([]);
     listaEmpleados = signal<InfoBasicaEmpleado[]>([]);
@@ -51,19 +61,26 @@ export class Admin implements OnInit {
     filtroSupervisor: number;
     filtroZona: number;
     rangeDates: Date[] = [];
-
+    Salv;
+    protected consultandoAsistencia = signal(false);
+    protected exportandoExcel = signal(false);
     protected incidencias: any;
     protected mostrarModalInconsistencias: boolean;
+    protected readonly Autoridades = Autoridades;
+    private loadingService = inject(SpinnerService);
     private asistencias = inject(AsistenciaService);
     private empleadoService = inject(EmpleadoService);
     private unidadService = inject(UnidadService);
     private puestoService = inject(PuestoService);
     private zonaService = inject(ZonaService);
-
-    constructor() {}
-
+    private securityService = inject(JWTService);
     get jornadasAbiertas(): number {
         return this.empleados.reduce((total, emp) => total + emp.asistencias.filter((a) => !a.jornadaCerrada).length, 0);
+    }
+
+    get puedeUsarFiltroSupervisor() {
+        const empleadoId = this.securityService.getUser().empleadoId;
+        return !(this.securityService.hasAuthority(Autoridades.RESTRINGIR_CONSULTA_SUPERVISOR_ASIST) && empleadoId);
     }
 
     /**
@@ -95,20 +112,26 @@ export class Admin implements OnInit {
     }
 
     cargarAsistencias() {
+        this.loadingService.show();
         if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[1]) {
+            this.loadingService.hide();
             return;
         }
-
         const params: EmpleadoReporteRequest = {};
         const [desde, hasta] = this.rangeDates;
         params.desde = fechaISOString(desde);
         params.hasta = fechaISOString(obtenerFinDia(hasta));
 
+        // Si tiene restricción de supervisor, asignar automáticamente su ID
+        const empleadoId = this.securityService.getUser().empleadoId;
+        if (!this.puedeUsarFiltroSupervisor && empleadoId) {
+            params.supervisorId = empleadoId;
+        } else if (this.filtroSupervisor) {
+            params.supervisorId = this.filtroSupervisor;
+        }
+
         if (this.filtroUnidad) {
             params.unidadId = this.filtroUnidad;
-        }
-        if (this.filtroSupervisor) {
-            params.supervisorId = this.filtroSupervisor;
         }
         if (this.filtroZona) {
             params.zonaId = this.filtroZona;
@@ -116,14 +139,15 @@ export class Admin implements OnInit {
         if (this.filtroPuesto) {
             params.puestoId = this.filtroPuesto;
         }
-
         if (this.filtroEmpleado) {
             params.empleadoId = this.filtroEmpleado;
         }
+
         // Verificar que exista al menos un filtro además del rango de fecha
-        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado || (!this.puedeUsarFiltroSupervisor && empleadoId);
 
         if (!tieneAlMenosUnFiltro) {
+            this.loadingService.hide();
             return;
         }
         this.asistencias.obtenerAsistencias(params).subscribe({
@@ -136,11 +160,18 @@ export class Admin implements OnInit {
                         diferenciaCalculada: this.calcularDiferenciaEnMomento(asistencia)
                     }))
                 }));
+            },
+            complete: () => {
+                this.loadingService.hide();
+            },
+            error: () => {
+                this.loadingService.hide();
             }
         });
     }
 
     cargarOpcionesFiltros() {
+        this.loadingService.show();
         forkJoin([this.unidadService.obtenerUnidades(), this.puestoService.obtenerPuestos(), this.empleadoService.obtenerSoloEmpleados(), this.zonaService.obtenerZonas(), this.empleadoService.obtenerSupervisores()]).subscribe({
             next: ([unidadesResp, puestosResp, empleadosResp, zonaResp, superResp]) => {
                 this.unidades.set(unidadesResp.data.filter((unidad) => unidad.activo));
@@ -148,12 +179,20 @@ export class Admin implements OnInit {
                 this.listaEmpleados.set(empleadosResp.data.filter((empleado) => empleado.estatus !== 'B'));
                 this.zonas.set(zonaResp.data);
                 this.supervisores.set(superResp.data);
+            },
+            complete: () => {
+                this.loadingService.hide();
+            },
+            error: () => {
+                this.loadingService.hide();
             }
         });
     }
 
     descargarExcel() {
+        this.exportandoExcel.set(true);
         if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[1]) {
+            this.exportandoExcel.set(false);
             return;
         }
 
@@ -162,11 +201,16 @@ export class Admin implements OnInit {
         params.desde = fechaISOString(desde);
         params.hasta = fechaISOString(obtenerFinDia(hasta));
 
+        // Si tiene restricción de supervisor, asignar automáticamente su ID
+        const empleadoId = this.securityService.getUser().empleadoId;
+        if (!this.puedeUsarFiltroSupervisor && empleadoId) {
+            params.supervisorId = empleadoId;
+        } else if (this.filtroSupervisor) {
+            params.supervisorId = this.filtroSupervisor;
+        }
+
         if (this.filtroUnidad) {
             params.unidadId = this.filtroUnidad;
-        }
-        if (this.filtroSupervisor) {
-            params.supervisorId = this.filtroSupervisor;
         }
         if (this.filtroZona) {
             params.zonaId = this.filtroZona;
@@ -174,14 +218,15 @@ export class Admin implements OnInit {
         if (this.filtroPuesto) {
             params.puestoId = this.filtroPuesto;
         }
-
         if (this.filtroEmpleado) {
             params.empleadoId = this.filtroEmpleado;
         }
+
         // Verificar que exista al menos un filtro además del rango de fecha
-        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado || (!this.puedeUsarFiltroSupervisor && empleadoId);
 
         if (!tieneAlMenosUnFiltro) {
+            this.exportandoExcel.set(false);
             return;
         }
         this.asistencias.descargarExcel(params).subscribe({
@@ -193,9 +238,17 @@ export class Admin implements OnInit {
                 a.click();
                 window.URL.revokeObjectURL(url);
                 this.mostrarModalFiltros = false;
+                this.exportandoExcel.set(false);
+            },
+            complete: () => {
+                this.exportandoExcel.set(false);
+            },
+            error: () => {
+                this.exportandoExcel.set(false);
             }
         });
-    }Salv
+    }
+
     obtenerDuracionJornada(asistencia: any): number {
         return 8; // Duración fija de 8 horas para diseño uniforme
     }
@@ -281,6 +334,7 @@ export class Admin implements OnInit {
             };
         }
     }
+
     mostrarInconsistencias(id: number) {
         this.mostrarModalInconsistencias = true;
         if (!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[0] || !this.rangeDates[1]) {
@@ -302,12 +356,34 @@ export class Admin implements OnInit {
 
     actulizarTabla() {
         // Verificar que exista al menos un filtro además del rango de fecha
-        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
+        const empleadoId = this.securityService.getUser().empleadoId;
+        const tieneAlMenosUnFiltro = this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado || (!this.puedeUsarFiltroSupervisor && empleadoId);
 
         if (!tieneAlMenosUnFiltro) {
             this.empleados = [];
             return;
         }
         this.cargarAsistencias();
+    }
+
+    mostrarFiltroAvanzado() {
+        this.mostrarModalFiltros = true;
+    }
+
+    aplicarFiltroAvanzado() {
+        if (this.supervisorSeleccionado) {
+            this.filtroSupervisor = this.supervisorSeleccionado;
+            this.filtroActivo = true;
+            this.cargarAsistencias();
+        }
+        this.mostrarModalFiltros = false;
+    }
+
+    limpiarFiltros() {
+        this.supervisorSeleccionado = null;
+        this.filtroSupervisor = null;
+        this.filtroActivo = false;
+        this.cargarAsistencias();
+        this.mostrarModalFiltros = false;
     }
 }

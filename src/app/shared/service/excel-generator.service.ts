@@ -1,14 +1,11 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx/xlsx.mjs';
-import {Ticket} from '@/models/reporte/ticket';
-import {Seguimiento} from '@/models/reporte/seguimiento';
-import {InfoBasicaEmpleado} from '@/models/organizacion/empleado';
-import {CredencialDto} from "@/module/credencial/credencial.service";
+import { Ticket } from '@/models/reporte/ticket';
+import { Seguimiento } from '@/models/reporte/seguimiento';
+import { CredencialDto } from '@/module/credencial/credencial.service';
 
-
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class ExcelGeneratorService {
-
     async generarExcelTicket(ticket: Ticket, historial: Seguimiento[]): Promise<void> {
         const workbook = XLSX.utils.book_new();
 
@@ -62,7 +59,7 @@ export class ExcelGeneratorService {
             tableHeaderRow = currentRow++;
 
             // Datos de cada seguimiento
-            historial.forEach(seg => {
+            historial.forEach((seg) => {
                 data.push([this.formatDate(seg.creado), seg.estatus?.nombre || 'N/A', seg.agente || '', seg.descripcion ? this.stripHtml(seg.descripcion) : '', seg.nombreArchivo || '']);
                 currentRow++;
             });
@@ -75,11 +72,12 @@ export class ExcelGeneratorService {
         // Para colores usaría exceljs en su lugar
 
         // Ajustar ancho de columnas
-        worksheet['!cols'] = [{width: 25}, // Columna A (labels)
-            {width: 20}, // Columna B (valores/estatus)
-            {width: 15}, // Columna C (agente)
-            {width: 40}, // Columna D (descripción)
-            {width: 20}  // Columna E (archivo)
+        worksheet['!cols'] = [
+            { width: 25 }, // Columna A (labels)
+            { width: 20 }, // Columna B (valores/estatus)
+            { width: 15 }, // Columna C (agente)
+            { width: 40 }, // Columna D (descripción)
+            { width: 20 } // Columna E (archivo)
         ];
 
         // Agregar hoja al libro
@@ -87,40 +85,6 @@ export class ExcelGeneratorService {
 
         // Descargar archivo
         XLSX.writeFile(workbook, `ticket-${ticket.folio || 'sin-folio'}.xlsx`);
-    }
-
-    async generarExcelEmpleados(empleados: InfoBasicaEmpleado[]): Promise<void> {
-        const workbook = XLSX.utils.book_new();
-
-        // Crear datos para la hoja
-        const data: any[][] = [];
-
-        // Encabezados
-        data.push(['Código', 'Nombre Completo', 'Unidad', 'Puesto', 'Estado']);
-
-        // Datos de empleados
-        empleados.forEach(empleado => {
-            const estado = empleado.estatus === 'A' ? 'Activo' : empleado.estatus === 'R' ? 'Reingreso' : 'Baja';
-            data.push([empleado.codigoEmpleado, empleado.nombreCompleto, empleado.unidadNombreCompleto, empleado.puestoNombre, estado]);
-        });
-
-        // Crear hoja de trabajo
-        const worksheet = XLSX.utils.aoa_to_sheet(data);
-
-        // Ajustar ancho de columnas
-        worksheet['!cols'] = [{width: 15}, // Código
-            {width: 30}, // Nombre Completo
-            {width: 25}, // Unidad
-            {width: 25}, // Puesto
-            {width: 15}  // Estado
-        ];
-
-        // Agregar hoja al libro
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Empleados');
-
-        // Descargar archivo
-        const fecha = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(workbook, `empleados-${fecha}.xlsx`);
     }
 
     async generarExcelCredenciales(credenciales: CredencialDto[]): Promise<void> {
@@ -133,23 +97,32 @@ export class ExcelGeneratorService {
         data.push(['Usuario', 'Tipo', 'Departamento', 'Unidad', 'Nota', 'Contraseña', 'Creado', 'Actualizado']);
 
         // Datos de credenciales
-        credenciales.forEach(credencial => {
-            data.push([credencial.usuario, credencial.tipoNombre, credencial.departamentoNombre, credencial.unidadNombreCompleto, credencial.nota, credencial.clave, // Nota: En producción considerar si mostrar la contraseña
-                this.formatDate(credencial.creado), this.formatDate(credencial.actualizado)]);
+        credenciales.forEach((credencial) => {
+            data.push([
+                credencial.usuario,
+                credencial.tipoNombre,
+                credencial.departamentoNombre,
+                credencial.unidadNombreCompleto,
+                credencial.nota,
+                credencial.clave, // Nota: En producción considerar si mostrar la contraseña
+                this.formatDate(credencial.creado),
+                this.formatDate(credencial.actualizado)
+            ]);
         });
 
         // Crear hoja de trabajo
         const worksheet = XLSX.utils.aoa_to_sheet(data);
 
         // Ajustar ancho de columnas
-        worksheet['!cols'] = [{width: 20}, // Usuario
-            {width: 15}, // Tipo
-            {width: 20}, // Departamento
-            {width: 25}, // Unidad
-            {width: 30}, // Nota
-            {width: 20}, // Contraseña
-            {width: 20}, // Creado
-            {width: 20}  // Actualizado
+        worksheet['!cols'] = [
+            { width: 20 }, // Usuario
+            { width: 15 }, // Tipo
+            { width: 20 }, // Departamento
+            { width: 25 }, // Unidad
+            { width: 30 }, // Nota
+            { width: 20 }, // Contraseña
+            { width: 20 }, // Creado
+            { width: 20 } // Actualizado
         ];
 
         // Agregar hoja al libro
@@ -199,7 +172,8 @@ export class ExcelGeneratorService {
         const d = new Date(date);
         if (isNaN(d.getTime())) return 'Fecha inválida';
         return `${d.toLocaleDateString('es-ES')} ${d.toLocaleTimeString('es-ES', {
-            hour: '2-digit', minute: '2-digit'
+            hour: '2-digit',
+            minute: '2-digit'
         })}`;
     }
 }

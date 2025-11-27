@@ -1,5 +1,5 @@
-import { Component, Input, booleanAttribute, computed, signal } from '@angular/core';
-import { NgOptimizedImage } from "@angular/common";
+import { booleanAttribute, Component, Input } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
     selector: 'app-title',

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AbstractService } from '@/shared/service/abstract-service';
+import { AbstractService } from '@/core/services/abstract-service';
 import { environment } from '@env/environment';
-import { ResponseData } from '@/shared/util/responseData';
+import { ResponseData } from '@/core/responseData';
 import { HttpParams } from '@angular/common/http';
 import { Unidad } from '@/models/empresa/unidad';
 

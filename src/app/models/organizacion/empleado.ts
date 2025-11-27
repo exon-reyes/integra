@@ -5,4 +5,6 @@ export interface InfoBasicaEmpleado {
     estatus: string;
     nombreCompleto: string;
     unidadNombreCompleto: string;
+    fechaAlta: string;
+    fechaBaja: string;
 }
