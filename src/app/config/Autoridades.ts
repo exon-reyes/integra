@@ -1,0 +1,86 @@
+/**
+ * Objeto que contiene todas las constantes de permisos (autoridades)
+ * utilizados en la aplicación. Cada valor representa la autoridad (key)
+ * que debe ser evaluada en el backend.
+ */
+export const Autoridades = {
+    // ================== GENERALES ==================
+    VER_MODULO_GENERALES: 'A',
+
+    // === UNIDADES ===
+    VER_SUBMODULO_UNIDADES: 'AA',
+    CONSULTAR_UNIDADES: 'AA1',
+    EDITAR_UNIDAD: 'AA2',
+    ELIMINAR_UNIDAD: 'AA3',
+    CREAR_UNIDAD: 'AA5',
+    EXPORTAR_UNIDAD: 'AA6',
+
+    // === ZONAS ===
+    VER_SUBMODULO_ZONAS: 'AB',
+    CREAR_ZONA: 'AB2',
+    EDITAR_ZONA: 'AB3',
+    ELIMINAR_ZONA: 'AB4',
+
+    // ================== GESTIÓN RRHH ==================
+    VER_MODULO_RRHH: 'B',
+
+    // === EMPLEADOS ===
+    VER_SUBMODULO_EMPLEADOS: 'BA',
+    CONSULTAR_INFORME_EMPLEADOS: 'BA1',
+    VER_INDICADORES_EMPLEADOS: 'BA2',
+    EXPORTAR_EMPLEADOS: 'BA3',
+    RESTRINGIR_CONSULTA_SUPERVISOR_EMPL: 'BA4',
+
+    // === ASISTENCIA ===
+    VER_SUBMODULO_INFORME_ASISTENCIA: 'BB',
+    CONSULTAR_INFORME_ASISTENCIA: 'BB1',
+    RESTRINGIR_CONSULTA_SUPERVISOR_ASIST: 'BB2',
+    EXPORTAR_ASISTENCIA: 'BB3',
+
+    // === CONFIG OPENTIME ===
+    VER_SUBMODULO_CONFIG_OPENTIME: 'BC',
+    CONSULTAR_CONFIGURACION: 'BC1',
+    ACTIVAR_DESACTIVAR_CAMARA: 'BC2',
+    MODIFICAR_TIEMPOS_COMP: 'BC3',
+    APROBAR_CONFIG_PERSONALIZADA: 'BC4',
+    VER_INDICADORES_USO: 'BC5',
+
+    // === COMPENSACIONES ===
+    VER_SUBMODULO_COMPENSACIONES: 'BD',
+    VER_COMPENSACIONES_APLICADAS: 'BD1',
+    RESTRINGIR_CONSULTA_SUPERVISOR_COMP: 'BD2',
+    EXPORTAR_COMPENSACIONES: 'BD3',
+    ACCESO_RELOJ_CHECADOR: 'BD4',
+
+    // ================== INFRAESTRUCTURA TI ==================
+    VER_MODULO_INFRAESTRUCTURA: 'C',
+
+    // === ROLES ===
+    VER_SUBMODULO_ROLES: 'CA',
+    VER_ROLES_PERMISOS: 'CA1',
+    ELIMINAR_ROL: 'CA2',
+    EDITAR_ROL: 'CA3',
+    CREAR_ROL: 'CA4',
+
+    // === USUARIOS ===
+    VER_SUBMODULO_USUARIOS: 'CB',
+    CONSULTAR_USUARIOS: 'CB1',
+    CREAR_USUARIO: 'CB2',
+    EDITAR_USUARIO: 'CB3',
+    DESACTIVAR_USUARIO: 'CB4',
+
+    // === CREDENCIALES ===
+    VER_SUBMODULO_CREDENCIALES: 'CC',
+    CONSULTAR_CREDENCIALES: 'CC1',
+    EDITAR_CREDENCIALES: 'CC2',
+    ELIMINAR_CREDENCIALES: 'CC3',
+    EXPORTAR_CREDENCIALES: 'CC4',
+    CREAR_CREDENCIAL: 'CC5',
+    CREAR_PROVEEDOR: 'CC6',
+    CONSULTAR_PROVEEDORES: 'CC7',
+    EDITAR_PROVEEDOR: 'CC8',
+    ELIMINAR_PROVEEDOR: 'CC9',
+
+} as const;
+
+export type AutoridadKey = typeof Autoridades[keyof typeof Autoridades];
